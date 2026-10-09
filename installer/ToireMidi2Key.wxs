@@ -1,13 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  ToireMidi2Key 安装包定义（WiX v7）
+  ToireMidi2Key 安装包定义（WiX v5）
 
-  关键设计：Scope="perUser" —— 每用户安装，装到 %LocalAppData%\Programs\ToireMidi2Key
-    · 不需要管理员权限、不弹 UAC（双击 MSI 直接装）
-    · 关键是这个目录【可写】—— 程序的 config.json 恒在 exe 同目录（AppContext.BaseDirectory），
-      装在 Program Files 会因无写权限而存不下配置
+  关键设计：
+  1) Scope="perUser" —— 每用户安装，默认装到 %LocalAppData%\Programs\ToireMidi2Key
+     · 不需要管理员权限、双击安装不弹 UAC
+     · 关键是这个目录【可写】—— 程序的 config.json 恒在 exe 同目录（AppContext.BaseDirectory），
+       装在 Program Files 会因为无写权限而存不下配置
+  2) 安装界面用 WixUI_InstallDir —— 带「许可协议」页和【选择安装位置】页，
+     用户可以改成任意路径（含中文路径，如 D:\临时文件\ToireMidi2Key）
+  3) 程序自身也支持中文路径：配置读写、提权重启全部走 .NET 的 Unicode 路径 API，无 ANSI 转换
 -->
-<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
 
   <Package Name="ToireMidi2Key"
            Manufacturer="KianaMirayi"
@@ -15,7 +20,8 @@
            UpgradeCode="7E3A1C9B-5D42-4F8A-9C61-2B7E5A4D8F31"
            Scope="perUser"
            Compressed="yes"
-           InstallerVersion="500">
+           InstallerVersion="500"
+           Codepage="936">
 
     <SummaryInformation Description="ToireMidi2Key —— 把 MIDI 键盘变成电脑键盘" />
 
@@ -23,6 +29,10 @@
     <MajorUpgrade AllowSameVersionUpgrades="yes"
                   DowngradeErrorMessage="已安装更高版本的 ToireMidi2Key，请先卸载后再装这一版。" />
     <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
+
+    <!-- 安装界面：欢迎 → 许可协议 → 选择安装位置（可改中文路径）→ 确认 → 安装 -->
+    <ui:WixUI Id="WixUI_InstallDir" InstallDirectory="INSTALLFOLDER" />
+    <WixVariable Id="WixUILicenseRtf" Value="installer\license.rtf" />
 
     <!-- 显式声明每用户安装：ALLUSERS=2 + MSIINSTALLPERUSER=1
          → 双击安装不弹 UAC，装进用户目录（该目录可写，config.json 才能落在 exe 旁边） -->
@@ -35,9 +45,9 @@
     <Property Id="ARPHELPLINK" Value="https://github.com/KianaMirayi/ToireMidi2Key" />
     <Property Id="ARPCOMMENTS" Value="弹哪个音，就等于按下哪个电脑按键（MIDI 键盘 → 电脑键盘）" />
     <Property Id="ARPNOREPAIR" Value="1" />
-    <Property Id="ARPNOMODIFY" Value="1" />
 
-    <!-- 安装位置：%LocalAppData%\Programs\ToireMidi2Key（可写，config.json 就放这里） -->
+    <!-- 默认安装位置：%LocalAppData%\Programs\ToireMidi2Key（可写，config.json 就放这里）
+         用户可在安装界面改成任意路径（中文路径同样支持） -->
     <StandardDirectory Id="LocalAppDataFolder">
       <Directory Id="ProgramsFolder" Name="Programs">
         <Directory Id="INSTALLFOLDER" Name="ToireMidi2Key">

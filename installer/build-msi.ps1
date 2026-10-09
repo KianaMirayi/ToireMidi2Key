@@ -34,7 +34,7 @@ if (-not (Get-Command wix -ErrorAction SilentlyContinue)) {
     throw '未找到 wix，请先执行：dotnet tool install --global wix --version 5.0.2'
 }
 Remove-Item $msi -Force -ErrorAction SilentlyContinue
-wix build installer\ToireMidi2Key.wxs -arch x64 -o $msi
+wix build installer\ToireMidi2Key.wxs -ext WixToolset.UI.wixext -culture zh-CN -arch x64 -o $msi
 if ($LASTEXITCODE -ne 0) { throw 'wix build 失败' }
 
 Write-Host ('完成: ' + $msi) -ForegroundColor Green
