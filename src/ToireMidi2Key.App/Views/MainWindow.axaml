@@ -11,7 +11,8 @@
         x:DataType="vm:MainViewModel"
         Icon="/Assets/avalonia-logo.ico"
         Title="ToireMidi2Key — MIDI 键盘 → 电脑键盘"
-        Background="{DynamicResource GsWindowBackground}"
+        Background="Transparent"
+        TransparencyLevelHint="Transparent"
         ExtendClientAreaToDecorationsHint="True"
         WindowDecorations="None"
         Width="1140" Height="700" MinWidth="960" MinHeight="560">
@@ -186,9 +187,12 @@
         </Style>
     </Window.Styles>
 
-    <!-- 整窗描金外框。WindowDecorations=None：框架不再画自己的边框，
-         所以用直角 + 连续金线，四角不会再出现断线/淡化 -->
-    <Border BorderBrush="{DynamicResource GsGold}" BorderThickness="1" ClipToBounds="True">
+    <!-- 整窗描金外框。WindowDecorations=None：框架不画自己的边框。
+         窗口开了透明（TransparencyLevelHint=Transparent），所以圆角外侧是真的透明，
+         金线可以做成连续圆角而不会在四角露底/断线 -->
+    <Border Background="{DynamicResource GsWindowBackground}"
+            BorderBrush="{DynamicResource GsGold}" BorderThickness="1"
+            CornerRadius="10" ClipToBounds="True">
         <Grid RowDefinitions="Auto,*">
 
             <!-- ===== 标题栏 ===== -->
