@@ -46,6 +46,9 @@ public sealed class ToireMidi2KeyConfig
     /// <summary>是否启用延音踏板行为。</summary>
     public bool SustainEnabled { get; set; }
 
+    /// <summary>启动时自动以管理员身份重启（界面上的开关；调试器附加时自动跳过）。</summary>
+    public bool AutoElevate { get; set; }
+
     /// <summary>MIDI 音号（或音名）→ 电脑按键。</summary>
     public Dictionary<string, string> Map { get; set; } = new();
 

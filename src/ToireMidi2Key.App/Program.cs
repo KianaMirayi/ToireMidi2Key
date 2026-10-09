@@ -1,16 +1,34 @@
 using Avalonia;
 using System;
+using System.IO;
+using ToireMidi2Key;
 
 namespace ToireMidi2Key.App;
 
 sealed class Program
 {
-    // Initialization code. Don't use any Avalonia, third-party APIs or any
-    // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
-    // yet and stuff might break.
+    // 是否在启动时自动提权，由界面上的开关决定（config.json 的 autoElevate）。
+    // 调试器附加时 Elevation 内部会自动跳过，否则断点全废。
     [STAThread]
-    public static void Main(string[] args) => BuildAvaloniaApp()
-        .StartWithClassicDesktopLifetime(args);
+    public static void Main(string[] args)
+    {
+        if (ShouldAutoElevate() && Elevation.TryRelaunchAsAdmin(args)) return;
+
+        BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+    }
+
+    private static bool ShouldAutoElevate()
+    {
+        try
+        {
+            string configPath = Path.Combine(AppContext.BaseDirectory, "config.json");
+            return File.Exists(configPath) && ToireMidi2KeyConfig.Load(configPath).AutoElevate;
+        }
+        catch
+        {
+            return false;
+        }
+    }
 
     // Avalonia configuration, don't remove; also used by visual designer.
     public static AppBuilder BuildAvaloniaApp()

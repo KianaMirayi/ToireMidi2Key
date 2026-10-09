@@ -111,6 +111,7 @@ dotnet run --project src\ToireMidi2Key.App
 | `velocityThreshold` | 小于该力度的音符忽略（防误触） |
 | `unmapped` | 未映射的音：`nearest`（就近折叠，原神推荐）或 `ignore` |
 | `toggleCc` | 踩这个 CC 暂停/恢复注入（默认 66；设 -1 关闭） |
+| `autoElevate` | 启动时自动以管理员身份运行（界面顶部的开关，默认关）。勾选后写盘，下次启动生效；调试器附加时自动跳过 |
 | `sustainCc` / `sustainEnabled` | 延音踏板（默认 CC64） |
 | `map` | `"音号或音名" → "电脑按键"`，按键可用 `Z` / `SPACE` / `F1` / `NUMPAD0` / `UP` … |
 

@@ -56,6 +56,12 @@ public partial class MainViewModel : ViewModelBase, IDisposable
     [ObservableProperty] public partial bool IsAdmin { get; set; }
     [ObservableProperty] public partial string ConfigPathText { get; set; } = "";
 
+    /// <summary>勾选后：下次启动自动以管理员身份运行（写入 config.json 的 autoElevate）。</summary>
+    [ObservableProperty] public partial bool AutoElevate { get; set; }
+
+    /// <summary>载入配置期间不要触发"改动即保存"。</summary>
+    private bool _loadingConfig;
+
     public string StartStopText => IsRunning ? "停止" : "启动";
     public string PauseButtonText => IsPaused ? "恢复注入" : "暂停注入";
 
@@ -69,8 +75,8 @@ public partial class MainViewModel : ViewModelBase, IDisposable
 
         IsAdmin = CoreInfo.IsAdministrator();
         AdminHint = IsAdmin
-            ? "管理员权限：注入通道已就绪"
-            : "非管理员：注入到以管理员运行的游戏（如原神）可能无效 → 点右边「以管理员重启」";
+            ? "已获得管理员权限，注入通道就绪。"
+            : "非管理员：注入到以管理员运行的游戏（如原神）会无效。勾选右边开关可在下次启动时自动提权，或点按钮立即重启。";
 
         _bridge.Log += OnBridgeLog;
         _bridge.StateChanged += OnBridgeStateChanged;
@@ -93,16 +99,37 @@ public partial class MainViewModel : ViewModelBase, IDisposable
 
     private void LoadFromConfig(ToireMidi2KeyConfig config)
     {
-        Mode = config.Mode;
-        Unmapped = config.Unmapped;
-        Transpose = config.Transpose;
-        MinRetriggerMs = config.MinRetriggerMs;
-        ChordSpreadMs = config.ChordSpreadMs;
-        SustainEnabled = config.SustainEnabled;
+        _loadingConfig = true;
+        try
+        {
+            Mode = config.Mode;
+            Unmapped = config.Unmapped;
+            Transpose = config.Transpose;
+            MinRetriggerMs = config.MinRetriggerMs;
+            ChordSpreadMs = config.ChordSpreadMs;
+            SustainEnabled = config.SustainEnabled;
+            AutoElevate = config.AutoElevate;
+        }
+        finally
+        {
+            _loadingConfig = false;
+        }
 
         Rows.Clear();
         foreach (KeyValuePair<string, string> entry in OrderMap(config.Map))
             Rows.Add(new MappingRowViewModel(entry.Key, entry.Value, RemoveRow));
+    }
+
+    /// <summary>勾选/取消"启动时自动以管理员身份运行"：立刻写盘，下次启动生效。</summary>
+    partial void OnAutoElevateChanged(bool value)
+    {
+        if (_loadingConfig) return;
+
+        ApplyUiToConfig();
+        _bridge.SaveConfig();
+        AppendLog(value
+            ? "已开启：下次启动会自动弹出 UAC 并以管理员身份运行（调试器附加时自动跳过）。"
+            : "已关闭：下次启动不再自动提权，仍可随时点「以管理员重启」。");
     }
 
     private static IEnumerable<KeyValuePair<string, string>> OrderMap(Dictionary<string, string> map)
@@ -255,7 +282,7 @@ public partial class MainViewModel : ViewModelBase, IDisposable
         }
         try
         {
-            ProcessStartInfo startInfo = BuildElevatedStartInfo();
+            ProcessStartInfo startInfo = Elevation.BuildElevatedStartInfo();
             AppendLog($"提权重启：{startInfo.FileName} {startInfo.Arguments}".Trim());
             Process.Start(startInfo);
             if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime)
@@ -266,51 +293,6 @@ public partial class MainViewModel : ViewModelBase, IDisposable
             AppendLog($"提权被取消或失败：{ex.Message}");
         }
     }
-
-    /// <summary>
-    /// 组装"以管理员重新启动"的命令行。
-    /// 关键：在调试器下启动时 Environment.ProcessPath 是 dotnet.exe（宿主进程），
-    /// 直接拿它 runas 相当于启动一个不带参数的 dotnet.exe——它会打印帮助然后立刻退出，
-    /// 表现就是"点了按钮、进程关了、但没重新起来"。
-    /// 所以优先用同目录的 apphost（ToireMidi2Key.exe），没有再退回"宿主 + dll + 参数"。
-    /// </summary>
-    private static ProcessStartInfo BuildElevatedStartInfo()
-    {
-        string baseDir = AppContext.BaseDirectory;
-        var startInfo = new ProcessStartInfo
-        {
-            UseShellExecute = true,
-            Verb = "runas",
-            WorkingDirectory = baseDir
-        };
-
-        string appHost = Path.Combine(baseDir, "ToireMidi2Key.exe");
-        if (File.Exists(appHost))
-        {
-            startInfo.FileName = appHost;
-            return startInfo;
-        }
-
-        string host = Environment.ProcessPath ?? throw new InvalidOperationException("拿不到当前进程路径");
-        string entryDll = System.Reflection.Assembly.GetEntryAssembly()?.Location ?? "";
-
-        var arguments = new List<string>();
-        bool hostIsDotnet = Path.GetFileNameWithoutExtension(host).Equals("dotnet", StringComparison.OrdinalIgnoreCase);
-        if (hostIsDotnet && entryDll.Length > 0) arguments.Add(entryDll);
-
-        foreach (string arg in Environment.GetCommandLineArgs().Skip(1))
-        {
-            if (arg.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)) continue;   // 避免重复加 dll
-            arguments.Add(arg);
-        }
-
-        startInfo.FileName = host;
-        startInfo.Arguments = string.Join(' ', arguments.Select(QuoteArgument));
-        return startInfo;
-    }
-
-    private static string QuoteArgument(string value) =>
-        value.Contains(' ') ? $"\"{value}\"" : value;
 
 
     private void OnBridgeLog(string message) => AppendLog(message);   // 只入队，不碰界面
