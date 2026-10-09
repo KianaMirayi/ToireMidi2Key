@@ -3,6 +3,7 @@
         xmlns:vm="using:ToireMidi2Key.App.ViewModels"
         xmlns:core="using:ToireMidi2Key"
         xmlns:sys="using:System"
+        xmlns:chrome="using:Avalonia.Controls.Chrome"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="1140" d:DesignHeight="700"
@@ -12,7 +13,7 @@
         Title="ToireMidi2Key — MIDI 键盘 → 电脑键盘"
         Background="{DynamicResource GsWindowBackground}"
         ExtendClientAreaToDecorationsHint="True"
-        WindowDecorations="BorderOnly"
+        WindowDecorations="None"
         Width="1140" Height="700" MinWidth="960" MinHeight="560">
 
     <Design.DataContext>
@@ -185,8 +186,9 @@
         </Style>
     </Window.Styles>
 
-    <!-- 整窗描金外框（自绘标题栏后，系统标题栏已隐藏） -->
-    <Border BorderBrush="{DynamicResource GsGold}" BorderThickness="1" CornerRadius="10" ClipToBounds="True">
+    <!-- 整窗描金外框。WindowDecorations=None：框架不再画自己的边框，
+         所以用直角 + 连续金线，四角不会再出现断线/淡化 -->
+    <Border BorderBrush="{DynamicResource GsGold}" BorderThickness="1" ClipToBounds="True">
         <Grid RowDefinitions="Auto,*">
 
             <!-- ===== 标题栏 ===== -->
@@ -355,6 +357,32 @@
                     </WrapPanel>
                 </Border>
             </Grid>
+
+            <!-- ===== 缩放热区：WindowDecorations=None 后要自己补，框架靠 ElementRole 做非客户区命中测试 ===== -->
+            <Border Grid.Row="0" Grid.RowSpan="2" Background="Transparent"
+                    chrome:WindowDecorationProperties.ElementRole="ResizeN"
+                    Height="5" VerticalAlignment="Top" />
+            <Border Grid.Row="0" Grid.RowSpan="2" Background="Transparent"
+                    chrome:WindowDecorationProperties.ElementRole="ResizeS"
+                    Height="5" VerticalAlignment="Bottom" />
+            <Border Grid.Row="0" Grid.RowSpan="2" Background="Transparent"
+                    chrome:WindowDecorationProperties.ElementRole="ResizeW"
+                    Width="5" HorizontalAlignment="Left" />
+            <Border Grid.Row="0" Grid.RowSpan="2" Background="Transparent"
+                    chrome:WindowDecorationProperties.ElementRole="ResizeE"
+                    Width="5" HorizontalAlignment="Right" />
+            <Border Grid.Row="0" Grid.RowSpan="2" Background="Transparent"
+                    chrome:WindowDecorationProperties.ElementRole="ResizeNW"
+                    Width="12" Height="12" HorizontalAlignment="Left" VerticalAlignment="Top" />
+            <Border Grid.Row="0" Grid.RowSpan="2" Background="Transparent"
+                    chrome:WindowDecorationProperties.ElementRole="ResizeNE"
+                    Width="12" Height="12" HorizontalAlignment="Right" VerticalAlignment="Top" />
+            <Border Grid.Row="0" Grid.RowSpan="2" Background="Transparent"
+                    chrome:WindowDecorationProperties.ElementRole="ResizeSW"
+                    Width="12" Height="12" HorizontalAlignment="Left" VerticalAlignment="Bottom" />
+            <Border Grid.Row="0" Grid.RowSpan="2" Background="Transparent"
+                    chrome:WindowDecorationProperties.ElementRole="ResizeSE"
+                    Width="12" Height="12" HorizontalAlignment="Right" VerticalAlignment="Bottom" />
         </Grid>
     </Border>
 </Window>
