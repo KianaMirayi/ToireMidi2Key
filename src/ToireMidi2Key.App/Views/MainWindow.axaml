@@ -187,13 +187,14 @@
         </Style>
     </Window.Styles>
 
-    <!-- 整窗描金外框。WindowDecorations=None：框架不画自己的边框。
-         窗口开了透明（TransparencyLevelHint=Transparent），所以圆角外侧是真的透明，
-         金线可以做成连续圆角而不会在四角露底/断线 -->
-    <Border Background="{DynamicResource GsWindowBackground}"
-            BorderBrush="{DynamicResource GsGold}" BorderThickness="1"
-            CornerRadius="10" ClipToBounds="True">
-        <Grid RowDefinitions="Auto,*">
+    <!-- 窗口分三层：
+         ① 内容层：圆角 + 裁剪（内容不会溢出圆角）
+         ② 描边层：单独画在最上层、不做裁剪 —— 否则 Border 的内容裁剪会把四角圆弧切掉
+         ③ 缩放热区 -->
+    <Grid>
+        <Border Background="{DynamicResource GsWindowBackground}"
+                CornerRadius="10" ClipToBounds="True" Margin="1">
+            <Grid RowDefinitions="Auto,*">
 
             <!-- ===== 标题栏 ===== -->
             <Border Grid.Row="0" Background="{DynamicResource GsPanel}"
@@ -388,5 +389,10 @@
                     chrome:WindowDecorationProperties.ElementRole="ResizeSE"
                     Width="12" Height="12" HorizontalAlignment="Right" VerticalAlignment="Bottom" />
         </Grid>
-    </Border>
+        </Border>
+
+        <!-- 描边层：不裁剪 + Margin 0.5，1px 金线完整落在窗口内，四角圆弧连续 -->
+        <Border BorderBrush="{DynamicResource GsGold}" BorderThickness="1"
+                CornerRadius="10" Margin="0.5" IsHitTestVisible="False" />
+    </Grid>
 </Window>
