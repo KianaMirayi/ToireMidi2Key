@@ -8,6 +8,18 @@ public static class CoreInfo
     [DllImport("shell32.dll")]
     private static extern bool IsUserAnAdmin();
 
+    [DllImport("advapi32.dll", SetLastError = true)]
+    private static extern bool OpenProcessToken(IntPtr processHandle, uint desiredAccess, out IntPtr tokenHandle);
+
+    [DllImport("advapi32.dll", SetLastError = true)]
+    private static extern bool GetTokenInformation(IntPtr tokenHandle, int tokenInformationClass, out uint tokenInformation, uint tokenInformationLength, out uint returnLength);
+
+    [DllImport("kernel32.dll")]
+    private static extern IntPtr GetCurrentProcess();
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    private static extern bool CloseHandle(IntPtr handle);
+
     [DllImport("winmm.dll", EntryPoint = "timeBeginPeriod")]
     private static extern uint timeBeginPeriod(uint milliseconds);
 
@@ -20,12 +32,41 @@ public static class CoreInfo
     [DllImport("avrt.dll", SetLastError = true)]
     private static extern bool AvRevertMmThreadCharacteristics(IntPtr handle);
 
-    /// <summary>当前进程是否以管理员身份运行。注入到以管理员运行的游戏（比如原神）通常需要。</summary>
-    public static bool IsAdministrator()
+    private const uint TokenQuery = 0x0008;
+    private const int TokenElevationClass = 18;
+
+    /// <summary>
+    /// 权威判断：当前进程令牌是否"已提升"（= 真正以管理员身份在跑）。
+    /// 不用 shell32 的 IsUserAnAdmin —— 它已被微软标记废弃，实测不可靠。
+    /// </summary>
+    public static bool IsElevated()
+    {
+        IntPtr token = IntPtr.Zero;
+        try
+        {
+            if (!OpenProcessToken(GetCurrentProcess(), TokenQuery, out token)) return false;
+            if (!GetTokenInformation(token, TokenElevationClass, out uint elevated, 4, out _)) return false;
+            return elevated != 0;
+        }
+        catch
+        {
+            return false;
+        }
+        finally
+        {
+            if (token != IntPtr.Zero) CloseHandle(token);
+        }
+    }
+
+    /// <summary>老判断（shell32 IsUserAnAdmin），只在日志里用于对比排查。</summary>
+    public static bool IsUserAnAdminLegacy()
     {
         try { return IsUserAnAdmin(); }
         catch { return false; }
     }
+
+    /// <summary>是否以管理员身份运行。注入到以管理员运行的游戏（比如原神）需要。</summary>
+    public static bool IsAdministrator() => IsElevated();
 
     /// <summary>SendInput 的 INPUT 结构体字节数：x64 应为 40，x86 应为 28。</summary>
     public static int SendInputStructSize => IntPtr.Size == 8 ? 40 : 28;

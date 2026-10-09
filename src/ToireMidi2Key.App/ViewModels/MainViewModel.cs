@@ -73,7 +73,8 @@ public partial class MainViewModel : ViewModelBase, IDisposable
         _bridge = bridge;
         ConfigPathText = bridge.ConfigPath;
 
-        IsAdmin = CoreInfo.IsAdministrator();
+        // 用 GetTokenInformation(TokenElevation) 判断，别用 shell32 的 IsUserAnAdmin（已废弃且不可靠）
+        IsAdmin = CoreInfo.IsElevated();
         AdminHint = IsAdmin
             ? "已获得管理员权限，注入通道就绪。"
             : "非管理员：注入到以管理员运行的游戏（如原神）会无效。勾选右边开关可在下次启动时自动提权，或点按钮立即重启。";
@@ -87,6 +88,7 @@ public partial class MainViewModel : ViewModelBase, IDisposable
         RefreshDevices();
         foreach (string warning in _bridge.Mapping.Warnings) AppendLog(warning);
 
+        AppendLog($"权限检测：TokenElevation={IsAdmin}  IsUserAnAdmin(旧接口)={CoreInfo.IsUserAnAdminLegacy()}  PID={Environment.ProcessId}");
         AppendLog("就绪：选设备 → 点「启动」→ 打开游戏里的乐器界面。");
         AppendLog("暂停注入（或踩下 CC66 / ⏸ 按钮）后仍会监听 MIDI，方便用「学习模式」配置映射。");
         AppendLog($"配置文件：{_bridge.ConfigPath}");
@@ -95,7 +97,6 @@ public partial class MainViewModel : ViewModelBase, IDisposable
         _uiTimer.Tick += (_, _) => FlushUi();
         _uiTimer.Start();
     }
-
 
     private void LoadFromConfig(ToireMidi2KeyConfig config)
     {
@@ -127,9 +128,21 @@ public partial class MainViewModel : ViewModelBase, IDisposable
 
         ApplyUiToConfig();
         _bridge.SaveConfig();
+
+        // 写盘后读回来核对，避免"看起来保存了其实没写进去"
+        bool persisted = value;
+        try { persisted = ToireMidi2KeyConfig.Load(_bridge.ConfigPath).AutoElevate; }
+        catch { /* 读不回来就按内存值报告 */ }
+
+        if (persisted != value)
+        {
+            AppendLog($"警告：config.json 写入后读回不一致（期望 {value}，实际 {persisted}）。");
+            return;
+        }
+
         AppendLog(value
-            ? "已开启：下次启动会自动弹出 UAC 并以管理员身份运行（调试器附加时自动跳过）。"
-            : "已关闭：下次启动不再自动提权，仍可随时点「以管理员重启」。");
+            ? "已开启：下次启动会自动弹出 UAC 并以管理员身份运行（调试器附加时自动跳过）。已写入 config.json。"
+            : "已关闭：下次启动不再自动提权，仍可随时点「以管理员重启」。已写入 config.json。");
     }
 
     private static IEnumerable<KeyValuePair<string, string>> OrderMap(Dictionary<string, string> map)
@@ -151,6 +164,7 @@ public partial class MainViewModel : ViewModelBase, IDisposable
         config.MinRetriggerMs = (int)(MinRetriggerMs ?? 30);
         config.ChordSpreadMs = (int)(ChordSpreadMs ?? 0);
         config.SustainEnabled = SustainEnabled;
+        config.AutoElevate = AutoElevate;
         config.Map = new Dictionary<string, string>();
 
         foreach (MappingRowViewModel row in Rows)
@@ -161,7 +175,6 @@ public partial class MainViewModel : ViewModelBase, IDisposable
 
         _bridge.ApplyConfig(config);
     }
-
 
     [RelayCommand]
     private void RefreshDevices()
@@ -272,28 +285,70 @@ public partial class MainViewModel : ViewModelBase, IDisposable
         }
     }
 
+    /// <summary>
+    /// 以管理员身份重启。失败时要让当前窗口留着，并把原因写进日志：
+    ///   · UAC 被点"否"（Win32 1223）→ 明确提示
+    ///   · 新进程拉起后立刻退出 → 不关自己，避免"窗口全没了"
+    /// </summary>
     [RelayCommand]
     private void RestartAsAdmin()
     {
         if (IsAdmin)
         {
-            AppendLog("已经是管理员权限了。");
+            AppendLog("当前已经是管理员权限。");
             return;
         }
+
+        ProcessStartInfo startInfo;
         try
         {
-            ProcessStartInfo startInfo = Elevation.BuildElevatedStartInfo();
-            AppendLog($"提权重启：{startInfo.FileName} {startInfo.Arguments}".Trim());
-            Process.Start(startInfo);
-            if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime)
-                lifetime.Shutdown();
+            startInfo = Elevation.BuildElevatedStartInfo();
         }
         catch (Exception ex)
         {
-            AppendLog($"提权被取消或失败：{ex.Message}");
+            AppendLog($"组装提权命令失败：{ex.Message}");
+            return;
         }
-    }
 
+        AppendLog($"提权重启：{startInfo.FileName} {startInfo.Arguments}".Trim());
+
+        Process? started;
+        try
+        {
+            started = Process.Start(startInfo);
+        }
+        catch (System.ComponentModel.Win32Exception ex) when (ex.NativeErrorCode == 1223)
+        {
+            AppendLog("提权已取消：你在 UAC 弹窗上点了「否」。");
+            return;
+        }
+        catch (Exception ex)
+        {
+            AppendLog($"提权失败：{ex.Message}");
+            return;
+        }
+
+        if (started is null)
+        {
+            AppendLog("提权失败：没有拿到新进程句柄。");
+            return;
+        }
+
+        int newPid = started.Id;
+        bool exitedEarly = false;
+        try { exitedEarly = started.WaitForExit(1500); } catch { /* 跨权限查不到状态时按已启动处理 */ }
+        started.Dispose();
+
+        if (exitedEarly)
+        {
+            AppendLog($"提权实例启动后立刻退出（PID {newPid}），本窗口保持不动。");
+            return;
+        }
+
+        AppendLog($"已拉起提权实例 PID={newPid}，本窗口关闭；新窗口顶部应显示「✔ 管理员」。");
+        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime)
+            lifetime.Shutdown();
+    }
 
     private void OnBridgeLog(string message) => AppendLog(message);   // 只入队，不碰界面
 
@@ -346,7 +401,6 @@ public partial class MainViewModel : ViewModelBase, IDisposable
         IsPaused = _bridge.IsPaused;
         StatusText = !IsRunning ? "未启动" : IsPaused ? "运行中（已暂停注入）" : "运行中";
     }
-
 
     private void FlushUi()
     {
