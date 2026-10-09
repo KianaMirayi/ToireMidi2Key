@@ -15,6 +15,7 @@
         TransparencyLevelHint="Transparent"
         ExtendClientAreaToDecorationsHint="True"
         WindowDecorations="None"
+        WindowStartupLocation="CenterScreen"
         Width="1140" Height="700" MinWidth="960" MinHeight="560">
 
     <Design.DataContext>
