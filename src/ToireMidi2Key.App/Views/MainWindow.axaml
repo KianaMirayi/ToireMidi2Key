@@ -41,6 +41,13 @@
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="FontSize" Value="12" />
         </Style>
+        <!-- 权限提示：加粗加大，一眼能看到 -->
+        <Style Selector="TextBlock.adminHint">
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
     </Window.Styles>
 
     <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="14" RowSpacing="10">
@@ -57,7 +64,7 @@
                     </Border>
                 </StackPanel>
 
-                <TextBlock Grid.Column="1" Classes="hint" Text="{Binding AdminHint}" TextWrapping="Wrap" />
+                <TextBlock Grid.Column="1" Classes="adminHint" Text="{Binding AdminHint}" />
 
                 <CheckBox Grid.Column="2" IsChecked="{Binding AutoElevate}"
                           Content="启动时自动以管理员身份运行"
@@ -168,13 +175,8 @@
         <Border Grid.Row="3" Classes="card">
             <WrapPanel Orientation="Horizontal" ItemSpacing="10" LineSpacing="8">
                 <TextBlock Classes="label" Text="注入方式" />
-                <ComboBox Width="130" ItemsSource="{Binding ModeOptions}" SelectedItem="{Binding Mode}" />
-
-                <TextBlock Classes="label" Text="未映射的音" />
-                <ComboBox Width="120" ItemsSource="{Binding UnmappedOptions}" SelectedItem="{Binding Unmapped}" />
-
-                <TextBlock Classes="label" Text="移调(半音)" />
-                <NumericUpDown Width="110" Minimum="-24" Maximum="24" Increment="1" Value="{Binding Transpose}" />
+                <ComboBox Width="130" ItemsSource="{Binding ModeOptions}" SelectedItem="{Binding Mode}"
+                          ToolTip.Tip="scancode = 发硬件扫描码（默认，游戏/DirectInput 认这个）；vk = 发虚拟键码（个别老程序只认这个）。游戏没反应时可以切换试试" />
 
                 <TextBlock Classes="label" Text="最小重触发(ms)" />
                 <NumericUpDown Width="110" Minimum="0" Maximum="300" Increment="5"
@@ -184,7 +186,6 @@
                 <NumericUpDown Width="110" Minimum="0" Maximum="100" Increment="1"
                                Value="{Binding ChordSpreadMs}" />
 
-                <CheckBox IsChecked="{Binding SustainEnabled}" Content="延音踏板(CC64)" />
                 <Button Content="打开配置目录" Command="{Binding OpenConfigFolderCommand}" />
 
                 <TextBlock Classes="hint" Text="{Binding ConfigPathText}" TextTrimming="CharacterEllipsis" />
