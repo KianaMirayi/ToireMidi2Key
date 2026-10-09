@@ -2,10 +2,7 @@ using System.Collections.Concurrent;
 
 namespace ToireMidi2Key.Cli;
 
-/// <summary>
-/// 异步控制台日志：写终端单次可能花 1~20ms，同步写会卡住引擎线程的按键注入，
-/// 所以日志交给独立线程，热路径只入队（队列满就丢）。
-/// </summary>
+/// <summary>异步控制台日志：写终端单次可能花 1~20ms，同步写会卡住引擎线程的按键注入，所以交给独立线程，热路径只入队（队列满就丢）。</summary>
 internal sealed class AsyncConsoleLog : IDisposable
 {
     private readonly BlockingCollection<string> _queue = new(new ConcurrentQueue<string>(), 8192);
@@ -39,8 +36,8 @@ internal sealed class AsyncConsoleLog : IDisposable
 
     public void Dispose()
     {
-        try { _queue.CompleteAdding(); } catch { /* 忽略 */ }
-        try { _thread.Join(800); } catch { /* 忽略 */ }
+        try { _queue.CompleteAdding(); } catch { }
+        try { _thread.Join(800); } catch { }
         _queue.Dispose();
     }
 }

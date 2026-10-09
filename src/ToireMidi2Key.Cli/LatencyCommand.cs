@@ -11,8 +11,7 @@ internal static partial class Program
 
         if (simulateCount > 0)
         {
-            // 合成测试：全部音临时映射到 F13~F24（这些键没有任何程序会响应），
-            // 既能测到真实的 SendInput 调用耗时，又不会往当前窗口里打字。
+            // 合成测试：全部音临时映射到 F13~F24（无程序会响应），既测到真实 SendInput 耗时，又不往当前窗口打字。
             var map = new Dictionary<string, string>();
             for (int i = 0; i < 12; i++) map[(48 + i).ToString()] = "F" + (13 + i);
             config.Map = map;
@@ -93,7 +92,7 @@ internal static partial class Program
         {
             int note = 48 + (i % notes);
             var batch = new List<int> { note };
-            if (i % 7 == 0)     // 偶尔来一个三音和弦
+            if (i % 7 == 0)
             {
                 batch.Add(48 + ((i + 4) % notes));
                 batch.Add(48 + ((i + 7) % notes));

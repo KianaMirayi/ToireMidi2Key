@@ -4,10 +4,7 @@ using ToireMidi2Key;
 
 namespace ToireMidi2Key.Cli;
 
-/// <summary>
-/// 命令行版：既能当正式工具用，也是排查问题的命脉。
-/// 引擎、映射、注入全在 ToireMidi2Key.Core 里，和 Avalonia 界面共用同一份逻辑。
-/// </summary>
+/// <summary>命令行版：既能当正式工具用，也是排查问题的命脉；引擎/映射/注入全在 ToireMidi2Key.Core，与 Avalonia 界面共用同一份逻辑。</summary>
 internal static partial class Program
 {
     private static string ConfigPath => Path.Combine(AppContext.BaseDirectory, "config.json");
@@ -36,7 +33,7 @@ internal static partial class Program
     {
         foreach (KeySender sender in ActiveSenders)
         {
-            try { sender.ReleaseAll(); } catch { /* 忽略 */ }
+            try { sender.ReleaseAll(); } catch { }
         }
     }
 
@@ -355,7 +352,7 @@ internal static partial class Program
 
         using var engine = new BridgeEngine(mapping, sender, config, logNotes: !quiet);
         using var consoleLog = new AsyncConsoleLog();
-        engine.OnLog += consoleLog.Write;      // 日志走独立线程，绝不拖慢按键注入
+        engine.OnLog += consoleLog.Write;
         engine.OnStateChanged += () => consoleLog.Write(engine.Enabled ? "  [状态] 已启用" : "  [状态] 已暂停");
 
         using var midi = new MidiInput(message =>
@@ -387,7 +384,7 @@ internal static partial class Program
         using var done = new ManualResetEventSlim(false);
         Console.CancelKeyPress += (_, e) =>
         {
-            e.Cancel = true;      // 交给我们的清理逻辑，而不是直接杀进程
+            e.Cancel = true;
             done.Set();
         };
         done.Wait(max);

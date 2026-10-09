@@ -22,13 +22,13 @@ public sealed class ToireMidi2KeyConfig
     /// <summary>整体移调（半音），临时改变八度很方便。</summary>
     public int Transpose { get; set; }
 
-    /// <summary>同一个音再次按下时，前后两次按键的最小间隔（毫秒）。太快会被游戏吞掉。</summary>
+    /// <summary>同一个音「还没松开又按下」时的最小重触发间隔（毫秒），太快会被游戏吞掉。</summary>
     public int MinRetriggerMs { get; set; } = 30;
 
     /// <summary>极短音符的最小按下时长（毫秒）。</summary>
     public int MinPulseMs { get; set; } = 15;
 
-    /// <summary>和弦错峰（毫秒）：同一瞬间的音符依次错开，防止游戏只吃到第一个。0 = 关闭。</summary>
+    /// <summary>和弦错峰（毫秒）：同一瞬间的音依次错开，防止游戏只吃到第一个。0 = 关闭。</summary>
     public int ChordSpreadMs { get; set; }
 
     /// <summary>小于这个力度的音符直接忽略（防误触）。</summary>
@@ -46,10 +46,10 @@ public sealed class ToireMidi2KeyConfig
     /// <summary>是否启用延音踏板行为。</summary>
     public bool SustainEnabled { get; set; }
 
-    /// <summary>启动时自动以管理员身份重启（界面上的开关；调试器附加时自动跳过）。</summary>
+    /// <summary>启动时自动以管理员身份重启（调试器附加时自动跳过）。</summary>
     public bool AutoElevate { get; set; }
 
-    /// <summary>MIDI 音号（或音名）→ 电脑按键。</summary>
+    /// <summary>MIDI 音号（或音名；科学音名 C4=60、Yamaha C3=60，推荐直接写音号）→ 电脑按键。</summary>
     public Dictionary<string, string> Map { get; set; } = new();
 
     public static JsonSerializerOptions JsonOptions { get; } = new()

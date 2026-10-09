@@ -16,8 +16,7 @@ public partial class MainViewModel : ViewModelBase, IDisposable
     private readonly IBridgeService _bridge;
     private bool _disposed;
 
-    // 日志先进队列，由定时器批量刷进界面。
-    // 直接一行一个 Dispatcher.Post + ObservableCollection.Add 会在快速弹奏时把 UI 线程刷爆。
+    // 日志先进队列，由 150ms 定时器批量刷进界面：逐行 Dispatcher.Post + Add 会在快速弹奏时把 UI 线程刷爆。
     private readonly ConcurrentQueue<string> _pendingLogs = new();
     private readonly DispatcherTimer _uiTimer;
 
@@ -121,7 +120,7 @@ public partial class MainViewModel : ViewModelBase, IDisposable
             Rows.Add(new MappingRowViewModel(entry.Key, entry.Value, RemoveRow));
     }
 
-    /// <summary>勾选/取消"启动时自动以管理员身份运行"：立刻写盘，下次启动生效。</summary>
+    /// <summary>勾选/取消"启动时自动以管理员身份运行"：立刻写盘并读回核对，下次启动生效。</summary>
     partial void OnAutoElevateChanged(bool value)
     {
         if (_loadingConfig) return;
@@ -129,10 +128,9 @@ public partial class MainViewModel : ViewModelBase, IDisposable
         ApplyUiToConfig();
         _bridge.SaveConfig();
 
-        // 写盘后读回来核对，避免"看起来保存了其实没写进去"
         bool persisted = value;
         try { persisted = ToireMidi2KeyConfig.Load(_bridge.ConfigPath).AutoElevate; }
-        catch { /* 读不回来就按内存值报告 */ }
+        catch { }
 
         if (persisted != value)
         {
@@ -145,8 +143,7 @@ public partial class MainViewModel : ViewModelBase, IDisposable
             : "已关闭：下次启动不再自动提权，仍可随时点「以管理员重启」。已写入 config.json。");
     }
 
-    // 数值型参数：在输入框里改完（Enter / 点到别处 / 点上下箭头）会走到这里，
-    // 立刻同步给引擎（就地更新，运行中也生效），并提示还需点「保存配置」才写盘。
+    // 数值型参数改完（Enter / 点到别处 / 点箭头）立刻同步给引擎（运行中也生效），并提示还需点「保存配置」才写盘。
     partial void OnTransposeChanged(decimal? value) => OnParameterChanged("移调", $"{value ?? 0} 半音");
     partial void OnMinRetriggerMsChanged(decimal? value) => OnParameterChanged("最小重触发", $"{value ?? 30} ms");
     partial void OnChordSpreadMsChanged(decimal? value) => OnParameterChanged("和弦错峰", $"{value ?? 0} ms");
@@ -220,7 +217,7 @@ public partial class MainViewModel : ViewModelBase, IDisposable
                     AppendLog("没有可用的 MIDI 设备，先插上键盘并点「刷新」。");
                     return;
                 }
-                ApplyUiToConfig();          // 启动前把界面上的设置同步进引擎
+                ApplyUiToConfig();
                 _bridge.Start(SelectedDevice.Index);
             }
         }
@@ -298,11 +295,7 @@ public partial class MainViewModel : ViewModelBase, IDisposable
         }
     }
 
-    /// <summary>
-    /// 以管理员身份重启。失败时要让当前窗口留着，并把原因写进日志：
-    ///   · UAC 被点"否"（Win32 1223）→ 明确提示
-    ///   · 新进程拉起后立刻退出 → 不关自己，避免"窗口全没了"
-    /// </summary>
+    /// <summary>以管理员身份重启：UAC 被点"否"（Win32 1223）或新实例启动后立刻退出时，都保留本窗口并把原因写进日志。</summary>
     [RelayCommand]
     private void RestartAsAdmin()
     {
@@ -363,7 +356,7 @@ public partial class MainViewModel : ViewModelBase, IDisposable
             lifetime.Shutdown();
     }
 
-    private void OnBridgeLog(string message) => AppendLog(message);   // 只入队，不碰界面
+    private void OnBridgeLog(string message) => AppendLog(message);
 
     private void OnBridgeStateChanged() => Dispatcher.UIThread.Post(SyncState);
 

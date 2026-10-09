@@ -74,7 +74,7 @@ public sealed class KeySender
     /// <summary>按键事件流水，供离线自检断言用。</summary>
     public readonly List<(string Key, bool Down)> Log = new();
 
-    // UI 线程（紧急松开按钮）和引擎线程都会碰这里的状态，所以必须加锁
+    // UI 线程（紧急松开）和引擎线程都会碰这里的状态，必须加锁
     private readonly object _gate = new();
     private readonly Dictionary<string, ushort> _down = new(StringComparer.Ordinal);
 

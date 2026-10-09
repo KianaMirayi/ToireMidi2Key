@@ -2,18 +2,7 @@ using System.Diagnostics;
 
 namespace ToireMidi2Key;
 
-/// <summary>
-/// 翻译引擎：吃进 MIDI 音符，吐出键盘按键。
-///
-/// 线程模型：
-///   - MIDI 回调在系统线程，只做一件事：Post 到队列（绝不阻塞）
-///   - 引擎自己有一条工作线程，串行处理队列 + 定时器 → 按键顺序完全确定
-///   - UI 通过 OnLog / OnStateChanged 事件拿状态，更新界面时记得回 UI 线程
-///
-/// 延迟关键路径（决定手感）：MIDI 回调 → 入队 → 工作线程拾起 → SendInput。
-/// 任何一步里做慢操作（同步写控制台、刷 UI）都会直接变成弹琴的延迟，
-/// 所以：① 日志一律放在按键注入之后；② 订阅方必须非阻塞；③ 用自旋唤醒而不是纯阻塞等待。
-/// </summary>
+/// <summary>翻译引擎：吃进 MIDI 音符，吐出键盘按键。回调线程只入队；工作线程串行处理队列 + 定时器，故按键顺序完全确定；UI 靠 OnLog / OnStateChanged 拿状态（更新界面记得回 UI 线程）。延迟路径上任何慢操作（写控制台、刷 UI）都会直接变成弹琴延迟。</summary>
 public sealed class BridgeEngine : IDisposable
 {
     private readonly Mapping _mapping;
@@ -23,7 +12,7 @@ public sealed class BridgeEngine : IDisposable
     private readonly Queue<Action> _queue = new();
     private readonly object _gate = new();
 
-    // 自旋 400 次再进入内核等待：事件到达时能被立刻拾起，省掉一次完整线程调度（约 0.3~1ms）
+    // 延迟三件套之一：自旋 400 次再进内核等待，省掉一次完整线程调度
     private readonly ManualResetEventSlim _signal = new(false, 400);
 
     private readonly List<(double Due, Action Action)> _timers = new();
@@ -31,11 +20,11 @@ public sealed class BridgeEngine : IDisposable
     private volatile bool _stopping;
     private IntPtr _mmcssHandle = IntPtr.Zero;
 
-    // 以下状态只在工作线程里改
-    private readonly Dictionary<int, int> _noteCounts = new();      // 音 -> 还没 note-off 的按下次数
-    private readonly Dictionary<int, string> _noteKeys = new();     // 音 -> 当前占用的按键
-    private readonly Dictionary<string, int> _keyRefs = new();      // 按键 -> 引用计数
-    private readonly Dictionary<string, ushort> _keyVks = new();    // 按键 -> 虚拟键码
+    // 以下状态只在工作线程里改：音→未 note-off 的按下次数 / 音→当前占用按键 / 按键→引用计数 / 按键→虚拟键码
+    private readonly Dictionary<int, int> _noteCounts = new();
+    private readonly Dictionary<int, string> _noteKeys = new();
+    private readonly Dictionary<string, int> _keyRefs = new();
+    private readonly Dictionary<string, ushort> _keyVks = new();
     private readonly Dictionary<string, double> _lastRelease = new();
     private readonly Dictionary<string, int> _pressGeneration = new();
     private readonly HashSet<string> _sustained = new();
@@ -92,11 +81,10 @@ public sealed class BridgeEngine : IDisposable
 
     public void Start()
     {
-        // 1ms 定时器精度：否则"延迟按下/同音重触发/和弦错峰"会被默认的 15.6ms 精度拖慢
+        // 延迟三件套之一：1ms 定时器精度，默认 15.6ms 会拖慢延迟按下/重触发/和弦错峰
         CoreInfo.RaiseTimerResolution(1);
         _worker.Start();
     }
-
 
     public void PostNoteOn(int note, int velocity, long callbackTimestamp = 0) =>
         Post(() => HandleNoteOn(note, velocity), callbackTimestamp);
@@ -158,7 +146,7 @@ public sealed class BridgeEngine : IDisposable
         {
             while (!_stopping)
             {
-                // 先清信号再取队列：这样"清信号"和"取队列"之间到达的事件不会丢，也不会空转
+                // 先清信号再取队列：两者之间到达的事件不会丢，也不会空转
                 _signal.Reset();
                 DrainQueue();
                 RunDueTimers();
@@ -176,6 +164,7 @@ public sealed class BridgeEngine : IDisposable
 
     private void EnterLowLatencyMode()
     {
+        // 延迟三件套之一：MMCSS "Pro Audio"（工作线程本身已是 Highest 优先级）
         _mmcssHandle = CoreInfo.EnterProAudio();
     }
 
@@ -260,7 +249,7 @@ public sealed class BridgeEngine : IDisposable
         double now = Now;
         double due = now;
 
-        // 和弦错峰：和上一个音几乎同时到达的音，依次推开一点点
+        // 和弦错峰：与上一个音几乎同时到达的音依次推开一点
         if (_config.ChordSpreadMs > 0 && now - _lastNoteOnTime < 0.03)
             due = Math.Max(now, _lastPressScheduled + _config.ChordSpreadMs / 1000.0);
         _lastNoteOnTime = now;
@@ -269,7 +258,7 @@ public sealed class BridgeEngine : IDisposable
         _noteCounts.TryGetValue(note, out int existingCount);
         if (existingCount > 0)
         {
-            // 同一个音又按了一次（上一个还没松）：必须先弹起来，否则游戏只会"继续按住"，不会出第二声
+            // 同一个音还没松开又按（minRetriggerMs 只对这种情况生效）：必须先弹起来，否则游戏只会"继续按住"
             string oldKey = _noteKeys[note];
             ForceRelease(oldKey);
             double lastRelease = _lastRelease.TryGetValue(oldKey, out double releasedAt) ? releasedAt : 0;
@@ -281,7 +270,7 @@ public sealed class BridgeEngine : IDisposable
         _keyVks[keyName] = vk;
         int generation = BumpGeneration(keyName);
 
-        // 先注入按键，再打日志：日志（可能写控制台/刷界面）绝不能挡在按键前面
+        // 日志必须在按键注入之后：日志可能写控制台/刷界面，绝不能挡在按键前面
         if (due <= now + 0.0005) PressKey(keyName, vk);
         else Schedule(due, () => FireScheduledPress(keyName, vk, note, generation));
 
@@ -308,12 +297,12 @@ public sealed class BridgeEngine : IDisposable
 
     private void HandleNoteOff(int note)
     {
-        if (!_noteCounts.TryGetValue(note, out int count) || count <= 0) return;   // 没有对应的按下，忽略
+        if (!_noteCounts.TryGetValue(note, out int count) || count <= 0) return;   // 没有对应按下，忽略
 
         count--;
         if (count > 0)
         {
-            _noteCounts[note] = count;     // 还有重叠的同音按着，先不松
+            _noteCounts[note] = count;     // 还有重叠的同音按着
             return;
         }
         _noteCounts.Remove(note);
@@ -411,7 +400,7 @@ public sealed class BridgeEngine : IDisposable
         _noteCounts.Clear();
         _noteKeys.Clear();
         FlushSustain();
-        _sender.ReleaseAll();     // 兜底：任何残留都松开
+        _sender.ReleaseAll();     // 兜底：残留的全部松开
     }
 
     private void Log(string message) => OnLog?.Invoke(message);

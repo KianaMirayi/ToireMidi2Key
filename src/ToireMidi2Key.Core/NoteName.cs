@@ -2,11 +2,7 @@ using System.Text.RegularExpressions;
 
 namespace ToireMidi2Key;
 
-/// <summary>
-/// MIDI 音号 &lt;-&gt; 音名。
-/// 坑：中央 C（MIDI 60）在 scientific 里叫 C4、在 Yamaha 硬件上叫 C3，
-/// 所以 --learn 同时打印两种写法；拿不准就直接写音号（0~127）。
-/// </summary>
+/// <summary>MIDI 音号 &lt;-&gt; 音名；注意中央 C（MIDI 60）科学音名是 C4、Yamaha 是 C3，拿不准就直接写音号 0~127（--learn 会同时打印两种写法）。</summary>
 public static class NoteName
 {
     public const string NamingScientific = "scientific";

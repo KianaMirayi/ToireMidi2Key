@@ -7,8 +7,7 @@ namespace ToireMidi2Key.App;
 
 sealed class Program
 {
-    // 是否在启动时自动提权，由界面上的开关决定（config.json 的 autoElevate）。
-    // 调试器附加时 Elevation 内部会自动跳过，否则断点全废。
+    // 是否自动提权由界面开关决定（config.json 的 autoElevate）；调试器附加时 Elevation 内部自动跳过，否则断点全废。
     [STAThread]
     public static void Main(string[] args)
     {

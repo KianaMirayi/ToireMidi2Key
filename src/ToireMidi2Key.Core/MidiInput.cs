@@ -35,10 +35,7 @@ public sealed class MidiDeviceInfo
     public string Name { get; set; } = "";
 }
 
-/// <summary>
-/// 用 winmm.dll 打开 MIDI 输入端口。
-/// 注意：回调来自系统线程（非托管），里面必须立刻返回，绝对不能抛异常。
-/// </summary>
+/// <summary>用 winmm.dll 打开 MIDI 输入端口；回调来自系统线程，必须立刻返回、绝不能抛异常。</summary>
 public sealed class MidiInput : IDisposable
 {
     private const int CALLBACK_FUNCTION = 0x00030000;
@@ -88,7 +85,7 @@ public sealed class MidiInput : IDisposable
         return list;
     }
 
-    // 必须一直持有这个委托，否则 GC 回收后系统回调会踩空
+    // 必须一直持有这个委托，否则 GC 回收后系统回调踩空
     private readonly MidiInProc _proc;
     private readonly Action<MidiMessage> _onMessage;
     private IntPtr _handle = IntPtr.Zero;
@@ -131,7 +128,7 @@ public sealed class MidiInput : IDisposable
         }
         catch
         {
-            // 回调里不能抛异常，否则会直接把进程带走
+            // 回调里不能抛异常，否则会把进程带走
         }
     }
 

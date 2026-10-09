@@ -34,10 +34,7 @@ public static class CoreInfo
 
     private const uint TokenQuery = 0x0008;
 
-    // 注意别搞混这两个：
-    //   TokenElevation     = 20 → DWORD 0/1，权威的"是否已提升"
-    //   TokenElevationType = 18 → 1=Default 2=Full 3=Limited，只是类型
-    // 之前这里写成 18，导致读到 3（Limited）被当成"已提升"，判断全反。
+    // 坑：权限检测必须用 TokenElevation=20（DWORD 0/1），不是 TokenElevationType=18（1=Default/2=Full/3=Limited，判 !=0 会恒为真）
     private const int TokenElevationClass = 20;
     private const int TokenElevationTypeClass = 18;
 
@@ -97,15 +94,15 @@ public static class CoreInfo
 
     public static bool Is64BitProcess => IntPtr.Size == 8;
 
-    /// <summary>把系统定时器精度提到 1ms（默认 15.6ms 会拖慢"延迟按下/重触发/和弦错峰"）。</summary>
+    /// <summary>把系统定时器精度提到 1ms（默认 15.6ms 会拖慢延迟按下/重触发/和弦错峰）。</summary>
     public static void RaiseTimerResolution(uint milliseconds = 1)
     {
-        try { timeBeginPeriod(milliseconds); } catch { /* 失败也不致命 */ }
+        try { timeBeginPeriod(milliseconds); } catch { }
     }
 
     public static void RestoreTimerResolution(uint milliseconds = 1)
     {
-        try { timeEndPeriod(milliseconds); } catch { /* 忽略 */ }
+        try { timeEndPeriod(milliseconds); } catch { }
     }
 
     /// <summary>登记为 MMCSS "Pro Audio" 线程（ASIO 驱动同款调度），减少 CPU 满载时的唤醒抖动。</summary>

@@ -2,9 +2,7 @@ using ToireMidi2Key;
 
 namespace ToireMidi2Key.App.Services;
 
-/// <summary>
-/// 把 Core 的三块（MIDI 输入 / 按键注入 / 翻译引擎）组装起来，供 ViewModel 使用。
-/// </summary>
+/// <summary>把 Core 的三块（MIDI 输入 / 按键注入 / 翻译引擎）组装起来，供 ViewModel 使用。</summary>
 public sealed class BridgeService : IBridgeService
 {
     private MidiInput? _midi;
@@ -59,9 +57,7 @@ public sealed class BridgeService : IBridgeService
 
     public void ApplyConfig(ToireMidi2KeyConfig config)
     {
-        // 就地更新已有实例：正在运行的引擎持有同一个 Config 引用，
-        // 所以改完数值参数（移调 / 最小重触发 / 和弦错峰…）立刻生效，不必停止再启动。
-        // （Mapping 是构造时注入引擎的，改映射表仍需停止后重新启动。）
+        // 就地更新同一个 Config 实例：运行中的引擎持有该引用，数值参数（移调 / 最小重触发 / 和弦错峰…）立刻生效；Mapping 是构造时注入的，改映射表仍需停止后重启。
         Config.Device = config.Device;
         Config.DeviceName = config.DeviceName;
         Config.Mode = config.Mode;

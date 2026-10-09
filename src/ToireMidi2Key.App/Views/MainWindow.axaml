@@ -22,7 +22,7 @@
     </Design.DataContext>
 
     <Window.Styles>
-        <!-- ===== 卡片：深色面板 + 描金边 ===== -->
+        <!-- 卡片：深色面板 + 描金边 -->
         <Style Selector="Border.card">
             <Setter Property="Background" Value="{DynamicResource GsPanel}" />
             <Setter Property="BorderBrush" Value="{DynamicResource GsGoldLine}" />
@@ -32,7 +32,6 @@
             <Setter Property="BoxShadow" Value="0 3 14 0 #55000000" />
         </Style>
 
-        <!-- ===== 文字 ===== -->
         <Style Selector="TextBlock.title">
             <Setter Property="Foreground" Value="{DynamicResource GsGold}" />
             <Setter Property="FontWeight" Value="SemiBold" />
@@ -63,7 +62,7 @@
             <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
 
-        <!-- ===== 按钮：石板色；主按钮描金 ===== -->
+        <!-- 按钮：石板色；主按钮描金 -->
         <Style Selector="Button">
             <Setter Property="Background" Value="#33FFFFFF" />
             <Setter Property="Foreground" Value="{DynamicResource GsCream}" />
@@ -91,7 +90,7 @@
             <Setter Property="Foreground" Value="#2B2118" />
         </Style>
 
-        <!-- ===== 自绘标题栏的窗口按钮 ===== -->
+        <!-- 自绘标题栏的窗口按钮 -->
         <Style Selector="Button.chrome">
             <Setter Property="Background" Value="#00000000" />
             <Setter Property="BorderBrush" Value="#00000000" />
@@ -113,7 +112,7 @@
             <Setter Property="Foreground" Value="#FFFFFF" />
         </Style>
 
-        <!-- ===== 输入控件 ===== -->
+        <!-- 输入控件 -->
         <Style Selector="TextBox">
             <Setter Property="Background" Value="{DynamicResource GsPanelDeep}" />
             <Setter Property="Foreground" Value="{DynamicResource GsCream}" />
@@ -126,12 +125,10 @@
             <Setter Property="BorderBrush" Value="{DynamicResource GsLine}" />
             <Setter Property="CornerRadius" Value="6" />
         </Style>
-        <!-- 下拉弹层：深底描金 -->
         <Style Selector="ComboBox /template/ Border">
             <Setter Property="Background" Value="{DynamicResource GsPanelDeep}" />
             <Setter Property="BorderBrush" Value="{DynamicResource GsGoldLine}" />
         </Style>
-        <!-- 下拉项：悬停/选中走金色 -->
         <Style Selector="ComboBoxItem">
             <Setter Property="Foreground" Value="{DynamicResource GsCream}" />
             <Setter Property="Padding" Value="10,6" />
@@ -175,14 +172,7 @@
             <Setter Property="Foreground" Value="{DynamicResource GsGoldBright}" />
         </Style>
 
-        <!-- 复选框：只改「方框 + 勾」，文字一律不碰。
-             Fluent 的 CheckBox 模板结构：
-               Border#PART_Border        ← 横跨整行（含文字区）的底，绝对不能动
-               Border#NormalRectangle    ← 真正的 20x20 方框
-               Path#CheckGlyph           ← 勾
-               ContentPresenter#PART_ContentPresenter ← 文字
-             之前用不限名字的 "CheckBox /template/ Border"，连 PART_Border 一起刷成了金色，
-             于是文字背后多出一条金底、读不清 -->
+        <!-- CheckBox 只改 Border#NormalRectangle（方框）和 Path#CheckGlyph（勾）；不要用不限名字的 Border 选择器，否则会连 PART_Border（横跨整行、含文字区）也一起上色 -->
         <Style Selector="CheckBox /template/ Border#NormalRectangle">
             <Setter Property="Background" Value="{DynamicResource GsPanelDeep}" />
             <Setter Property="BorderBrush" Value="{DynamicResource GsLine}" />
@@ -203,8 +193,7 @@
             <Setter Property="Fill" Value="#2B2118" />
         </Style>
 
-        <!-- 日志列表：选中 = 半透明金底 + 亮金字，和复选框选中同一套观感。
-             高亮画在模板内的 ContentPresenter 上；文字色要直接打到 ITEM 里的 TextBlock 才可靠 -->
+        <!-- 日志列表选中高亮画在模板内的 ContentPresenter 上（直接改 ListBoxItem.Background 无效）；文字色要打到 ITEM 里的 TextBlock 才可靠 -->
         <Style Selector="ListBox">
             <Setter Property="Background" Value="#00000000" />
             <Setter Property="Foreground" Value="{DynamicResource GsTextDim}" />
@@ -237,16 +226,12 @@
         </Style>
     </Window.Styles>
 
-    <!-- 窗口分三层：
-         ① 内容层：圆角 + 裁剪（内容不会溢出圆角）
-         ② 描边层：单独画在最上层、不做裁剪 —— 否则 Border 的内容裁剪会把四角圆弧切掉
-         ③ 缩放热区 -->
+    <!-- 窗口分三层：① 内容层（圆角 + 裁剪）② 描边层（单独画在最上层、不裁剪，否则 Border 的内容裁剪会把圆角圆弧切掉）③ 缩放热区 -->
     <Grid>
         <Border Background="{DynamicResource GsWindowBackground}"
                 CornerRadius="10" ClipToBounds="True" Margin="1">
             <Grid RowDefinitions="Auto,*">
 
-            <!-- ===== 标题栏 ===== -->
             <Border Grid.Row="0" Background="{DynamicResource GsPanel}"
                     BorderBrush="{DynamicResource GsGoldLine}" BorderThickness="0,0,0,1"
                     PointerPressed="OnTitleBarPointerPressed"
@@ -264,7 +249,6 @@
                 </Grid>
             </Border>
 
-            <!-- ===== 主体 ===== -->
             <Grid Grid.Row="1" RowDefinitions="Auto,Auto,*,Auto" Margin="14" RowSpacing="10">
 
                 <!-- 权限状态 + 自动提权开关 -->
@@ -413,7 +397,7 @@
                 </Border>
             </Grid>
 
-            <!-- ===== 缩放热区：WindowDecorations=None 后要自己补，框架靠 ElementRole 做非客户区命中测试 ===== -->
+            <!-- 缩放热区：WindowDecorations=None 后要自己补，框架靠 ElementRole 做非客户区命中测试 -->
             <Border Grid.Row="0" Grid.RowSpan="2" Background="Transparent"
                     chrome:WindowDecorationProperties.ElementRole="ResizeN"
                     Height="5" VerticalAlignment="Top" />
@@ -441,7 +425,7 @@
         </Grid>
         </Border>
 
-        <!-- 描边层：不裁剪 + Margin 0.5，1px 金线完整落在窗口内，四角圆弧连续 -->
+        <!-- 描边层：Margin 0.5 让 1px 金线完整落在窗口内，四角圆弧连续 -->
         <Border BorderBrush="{DynamicResource GsGold}" BorderThickness="1"
                 CornerRadius="10" Margin="0.5" IsHitTestVisible="False" />
     </Grid>

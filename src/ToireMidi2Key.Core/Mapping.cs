@@ -10,7 +10,7 @@ public sealed class Mapping
     private readonly Dictionary<int, ushort> _noteToVk = new();
     private readonly List<int> _sortedNotes = new();
 
-    /// <summary>配置里写错的条目（不影响其它映射能用的部分）。</summary>
+    /// <summary>配置里写错的条目（不影响其它映射）。</summary>
     public IReadOnlyList<string> Warnings { get; }
 
     public Mapping(ToireMidi2KeyConfig config)
@@ -46,10 +46,7 @@ public sealed class Mapping
 
     public bool IsMapped(int note) => _noteToKey.ContainsKey(note);
 
-    /// <summary>
-    /// 解析一个音应该按哪个键。
-    /// unmapped = nearest 时会做"就近折叠"：黑键折到最近白键、超范围折到最近的在范围内音。
-    /// </summary>
+    /// <summary>解析一个音该按哪个键；unmapped = nearest 时做就近折叠（黑键折最近白键、超范围折最近在范围内音）。</summary>
     public bool TryResolve(int note, string unmappedMode, out string keyName, out ushort vk, out int mappedNote)
     {
         if (_noteToKey.TryGetValue(note, out keyName))
@@ -66,7 +63,7 @@ public sealed class Mapping
             foreach (int candidate in _sortedNotes)
             {
                 int distance = Math.Abs(candidate - note);
-                if (distance < bestDistance)   // 平的时保留更低的音（听感上相当于降调）
+                if (distance < bestDistance)   // 平局时保留更低的音（听感上相当于降调）
                 {
                     best = candidate;
                     bestDistance = distance;
