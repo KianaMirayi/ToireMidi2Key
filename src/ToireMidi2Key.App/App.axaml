@@ -2,12 +2,29 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="ToireMidi2Key.App.App"
              xmlns:local="using:ToireMidi2Key.App"
-             RequestedThemeVariant="Default">
-             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+             RequestedThemeVariant="Dark">
 
     <Application.DataTemplates>
         <local:ViewLocator />
     </Application.DataTemplates>
+
+    <!-- 原神风格配色：深蓝夜色作底，米金 + 羊皮纸色作点缀 -->
+    <Application.Resources>
+        <SolidColorBrush x:Key="GsGold" Color="#D3BC8E" />
+        <SolidColorBrush x:Key="GsGoldBright" Color="#FFE6B3" />
+        <SolidColorBrush x:Key="GsCream" Color="#ECE5D8" />
+        <SolidColorBrush x:Key="GsTextDim" Color="#9DA9BC" />
+        <SolidColorBrush x:Key="GsPanel" Color="#1B2430" />
+        <SolidColorBrush x:Key="GsPanelDeep" Color="#121922" />
+        <SolidColorBrush x:Key="GsLine" Color="#3A4756" />
+        <SolidColorBrush x:Key="GsGoldLine" Color="#59D3BC8E" />
+        <SolidColorBrush x:Key="GsHover" Color="#3D4A5C" />
+        <LinearGradientBrush x:Key="GsWindowBackground" StartPoint="0%,0%" EndPoint="0%,100%">
+            <GradientStop Offset="0" Color="#2A3547" />
+            <GradientStop Offset="0.55" Color="#1A2331" />
+            <GradientStop Offset="1" Color="#111820" />
+        </LinearGradientBrush>
+    </Application.Resources>
 
     <Application.Styles>
         <FluentTheme />

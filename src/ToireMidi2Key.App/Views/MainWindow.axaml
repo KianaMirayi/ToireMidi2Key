@@ -10,6 +10,7 @@
         x:DataType="vm:MainViewModel"
         Icon="/Assets/avalonia-logo.ico"
         Title="ToireMidi2Key — MIDI 键盘 → 电脑键盘"
+        Background="{DynamicResource GsWindowBackground}"
         Width="1060" Height="700" MinWidth="900" MinHeight="560">
 
     <Design.DataContext>
@@ -17,36 +18,97 @@
     </Design.DataContext>
 
     <Window.Styles>
+        <!-- ===== 卡片：深色面板 + 描金边 ===== -->
         <Style Selector="Border.card">
-            <Setter Property="Background" Value="#14808080" />
-            <Setter Property="BorderBrush" Value="#33808080" />
+            <Setter Property="Background" Value="{DynamicResource GsPanel}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource GsGoldLine}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="CornerRadius" Value="10" />
             <Setter Property="Padding" Value="12" />
+            <Setter Property="BoxShadow" Value="0 3 14 0 #55000000" />
         </Style>
+
+        <!-- ===== 文字 ===== -->
         <Style Selector="TextBlock.title">
+            <Setter Property="Foreground" Value="{DynamicResource GsGold}" />
             <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontSize" Value="14" />
             <Setter Property="Margin" Value="0,0,0,8" />
         </Style>
-        <Style Selector="TextBlock.hint">
-            <Setter Property="Opacity" Value="0.6" />
-            <Setter Property="FontSize" Value="11" />
-            <Setter Property="VerticalAlignment" Value="Center" />
-        </Style>
         <Style Selector="TextBlock.label">
+            <Setter Property="Foreground" Value="{DynamicResource GsCream}" />
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="Margin" Value="0,0,4,0" />
+        </Style>
+        <Style Selector="TextBlock.hint">
+            <Setter Property="Foreground" Value="{DynamicResource GsTextDim}" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
         <Style Selector="TextBlock.badge">
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="FontSize" Value="12" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
         </Style>
-        <!-- 权限提示：加粗加大，一眼能看到 -->
         <Style Selector="TextBlock.adminHint">
+            <Setter Property="Foreground" Value="{DynamicResource GsGoldBright}" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="FontSize" Value="14" />
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+
+        <!-- ===== 按钮：石板色；主按钮描金 ===== -->
+        <Style Selector="Button">
+            <Setter Property="Background" Value="#33FFFFFF" />
+            <Setter Property="Foreground" Value="{DynamicResource GsCream}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource GsLine}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="12,5" />
+        </Style>
+        <Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource GsHover}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource GsGold}" />
+            <Setter Property="Foreground" Value="{DynamicResource GsGoldBright}" />
+        </Style>
+        <Style Selector="Button:pressed /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#66D3BC8E" />
+        </Style>
+        <Style Selector="Button.primary">
+            <Setter Property="Background" Value="{DynamicResource GsGold}" />
+            <Setter Property="Foreground" Value="#2B2118" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="BorderBrush" Value="#00000000" />
+        </Style>
+        <Style Selector="Button.primary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource GsGoldBright}" />
+            <Setter Property="Foreground" Value="#2B2118" />
+        </Style>
+
+        <!-- ===== 输入控件 ===== -->
+        <Style Selector="TextBox">
+            <Setter Property="Background" Value="{DynamicResource GsPanelDeep}" />
+            <Setter Property="Foreground" Value="{DynamicResource GsCream}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource GsLine}" />
+            <Setter Property="CornerRadius" Value="6" />
+        </Style>
+        <Style Selector="ComboBox">
+            <Setter Property="Background" Value="{DynamicResource GsPanelDeep}" />
+            <Setter Property="Foreground" Value="{DynamicResource GsCream}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource GsLine}" />
+            <Setter Property="CornerRadius" Value="6" />
+        </Style>
+        <Style Selector="CheckBox">
+            <Setter Property="Foreground" Value="{DynamicResource GsCream}" />
+        </Style>
+        <Style Selector="ListBox">
+            <Setter Property="Background" Value="#00000000" />
+            <Setter Property="Foreground" Value="{DynamicResource GsTextDim}" />
+        </Style>
+        <Style Selector="ListBoxItem">
+            <Setter Property="Padding" Value="4,1" />
         </Style>
     </Window.Styles>
 
@@ -56,10 +118,14 @@
         <Border Grid.Row="0" Classes="card" Padding="10,8">
             <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="10">
                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
-                    <Border IsVisible="{Binding IsAdmin}" Background="#1B5E20" CornerRadius="4" Padding="9,3">
-                        <TextBlock Classes="badge" Text="✔ 管理员" Foreground="#C8E6C9" />
+                    <Border IsVisible="{Binding IsAdmin}" VerticalAlignment="Center"
+                            Background="#2F6B52" BorderBrush="{DynamicResource GsGoldLine}" BorderThickness="1"
+                            CornerRadius="4" Padding="9,4">
+                        <TextBlock Classes="badge" Text="✔ 管理员" Foreground="#D9F2E4" />
                     </Border>
-                    <Border IsVisible="{Binding !IsAdmin}" Background="#8D3B00" CornerRadius="4" Padding="9,3">
+                    <Border IsVisible="{Binding !IsAdmin}" VerticalAlignment="Center"
+                            Background="#8A4B2A" BorderBrush="{DynamicResource GsGoldLine}" BorderThickness="1"
+                            CornerRadius="4" Padding="9,4">
                         <TextBlock Classes="badge" Text="⚠ 非管理员" Foreground="#FFE0B2" />
                     </Border>
                 </StackPanel>
@@ -90,7 +156,7 @@
                 <Button Grid.Column="2" Content="刷新" Command="{Binding RefreshDevicesCommand}" />
                 <TextBlock Grid.Column="3" Classes="hint" Text="{Binding DeviceSummary}"
                            TextTrimming="CharacterEllipsis" />
-                <Button Grid.Column="4" MinWidth="96" Content="{Binding StartStopText}"
+                <Button Grid.Column="4" Classes="primary" MinWidth="96" Content="{Binding StartStopText}"
                         Command="{Binding StartStopCommand}" />
                 <Button Grid.Column="5" MinWidth="96" Content="{Binding PauseButtonText}"
                         Command="{Binding TogglePauseCommand}" />
@@ -120,7 +186,7 @@
                                         <TextBlock Grid.Column="1" Classes="hint" Text="{Binding NoteDescription}" />
                                         <TextBox Grid.Column="2" Text="{Binding KeyText}" PlaceholderText="Z" />
                                         <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="6">
-                                            <TextBlock Text="●" Foreground="#E8A33D" IsVisible="{Binding IsHighlighted}"
+                                            <TextBlock Text="●" Foreground="{DynamicResource GsGoldBright}" IsVisible="{Binding IsHighlighted}"
                                                        VerticalAlignment="Center" ToolTip.Tip="最近学到的音" />
                                             <Button Content="删除" Command="{Binding DeleteCommand}" />
                                         </StackPanel>
@@ -136,7 +202,7 @@
                         <TextBlock Classes="label" Text="预设最低音" />
                         <NumericUpDown Width="110" Minimum="12" Maximum="96" Increment="1"
                                        Value="{Binding PresetBaseNote}" />
-                        <Button Content="保存配置" Command="{Binding SaveConfigCommand}" />
+                        <Button Classes="primary" Content="保存配置" Command="{Binding SaveConfigCommand}" />
                         <Button Content="重新载入" Command="{Binding ReloadConfigCommand}" />
                     </WrapPanel>
                 </Grid>
