@@ -2,20 +2,27 @@
 <!--
   ToireMidi2Key 安装包定义（WiX v5）
 
-  【为什么安装界面不提供「选择安装位置」】
-  曾经用 WixUI_InstallDir 让用户自选目录，但实测有严重隐患：
-    · 若用户把路径选成 D:\ 或 C:\，ToireMidi2Key.exe / 卸载.exe / README.md / LICENSE.txt
-      会直接散落到盘根或系统目录里，误删风险极高；
-    · 想用「用户选父目录 + 自动追加 ToireMidi2Key 子目录」补救也不行：
-      MSI 不会因为父目录属性被覆盖而重新推导子目录（日志实测 INSTALLROOT 变了、
-      INSTALLFOLDER 仍是默认值），改用自定义动作拼路径又会出现分隔符/取值时机问题。
-  所以现在：安装位置固定为 %LocalAppData%\Programs\ToireMidi2Key，
-  从结构上杜绝散落风险；需要自定义位置的高级用户可以用：
-    · 便携版 zip（解压到任意位置，含中文路径，config.json 仍在 exe 同目录）
-    · 或命令行：msiexec /i ToireMidi2Key-0.1.0-Setup.msi INSTALLFOLDER="D:\临时文件\ToireMidi2Key"
+  【安装位置策略：能选路径 + 自动父文件夹包裹】
+    · 安装界面上让用户选的是「父目录」（属性 INSTALLPARENT，默认 %LocalAppData%\Programs）
+    · 实际落地目录由自定义动作在 CostFinalize 之前算出来：
+          INSTALLFOLDER = [INSTALLPARENT]\ToireMidi2Key
+      所以用户即使把路径填成 D:\ 或 C:\，文件也只会进到 D:\ToireMidi2Key\ 或 C:\ToireMidi2Key\，
+      绝不会把 exe/卸载程序/README/LICENSE 散落到盘根或系统目录
+    · 为什么用自定义动作而不是直接让 Directory 表做父子推导：
+      MSI 不会因为「父目录属性被覆盖」而重新推导子目录（日志实测：INSTALLROOT 变成
+      C:\Users\Admin\Desktop，INSTALLFOLDER 仍是默认值）。而且目录属性在 CostFinalize
+      之前读不到用户在界面里选的值，所以选择属性用普通属性（INSTALLPARENT）承载。
+      （Type 51「设置属性」是 MSI 内置动作，不需要任何自定义代码）
+    · 命令行高级用法：msiexec /i ....msi INSTALLFOLDER="D:\临时文件\ToireMidi2Key"
+      显式给了 INSTALLFOLDER 时不覆盖（保持原样）
+
+  【推荐以管理员身份安装】许可协议页里写了提示：
+    · 默认装到用户目录，不需要管理员
+    · 装到 D:\ 等非系统盘时建议右键「以管理员身份运行」，否则 MSI 可能在
+      该盘的回滚目录（X:\Config.Msi）上因权限不足报「错误 5」
 
   其它：
-    · Scope="perUser" 每用户安装，不需要管理员、不弹 UAC；目录可写，config.json 恒在 exe 同目录
+    · Scope="perUser" 每用户安装，默认不弹 UAC；目录可写，config.json 恒在 exe 同目录
     · 安装目录里带「卸载.exe」（Native AOT，不依赖 .NET 运行时），开始菜单也有卸载入口
     · Codepage=936：界面与字符串含中文，WiX 默认 1252 会打包失败
 -->
@@ -37,11 +44,33 @@
                   DowngradeErrorMessage="已安装更高版本的 ToireMidi2Key，请先卸载后再装这一版。" />
     <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
 
-    <!-- 安装界面：欢迎 → 许可协议 → 确认 → 安装（不含选择目录页，位置固定且安全） -->
-    <ui:WixUI Id="WixUI_Minimal" />
+    <!-- 安装界面：欢迎 → 许可协议 → 选择安装位置（父目录）→ 确认 → 安装 -->
+    <ui:WixUI Id="WixUI_InstallDir" InstallDirectory="INSTALLPARENT" />
     <WixVariable Id="WixUILicenseRtf" Value="installer\license.rtf" />
 
-    <!-- 每用户安装：ALLUSERS=2 + MSIINSTALLPERUSER=1 -->
+    <!-- ① 用户选择的父目录（默认 %LocalAppData%\Programs，仅在没有值时兜底） -->
+    <CustomAction Id="SetDefaultParent"
+                  Property="INSTALLPARENT"
+                  Value="[LocalAppDataFolder]Programs\"
+                  Execute="immediate"
+                  Return="check" />
+    <!-- ② 实际落地目录 = 父目录 + \ToireMidi2Key（保证始终有同名父文件夹包裹） -->
+    <CustomAction Id="SetInstallFolder"
+                  Property="INSTALLFOLDER"
+                  Value="[INSTALLPARENT]\ToireMidi2Key"
+                  Execute="immediate"
+                  Return="check" />
+
+    <InstallUISequence>
+      <Custom Action="SetDefaultParent" Before="SetInstallFolder" Condition="NOT INSTALLPARENT" />
+      <Custom Action="SetInstallFolder" Before="ExecuteAction" />
+    </InstallUISequence>
+    <InstallExecuteSequence>
+      <Custom Action="SetDefaultParent" Before="SetInstallFolder" Condition="NOT INSTALLPARENT" />
+      <Custom Action="SetInstallFolder" Before="CostFinalize" Condition="NOT INSTALLFOLDER" />
+    </InstallExecuteSequence>
+
+    <!-- 每用户安装：ALLUSERS=2 + MSIINSTALLPERUSER=1（默认不弹 UAC） -->
     <Property Id="ALLUSERS" Value="2" />
     <Property Id="MSIINSTALLPERUSER" Value="1" />
 
@@ -51,10 +80,11 @@
     <Property Id="ARPCOMMENTS" Value="弹哪个音，就等于按下哪个电脑按键（MIDI 键盘 → 电脑键盘）" />
     <Property Id="ARPNOREPAIR" Value="1" />
 
-    <!-- 固定安装位置：%LocalAppData%\Programs\ToireMidi2Key（目录可写，config.json 就放这里）
-         命令行的 INSTALLFOLDER 覆盖仍然有效（见文件头说明） -->
+    <!-- 目录结构：LocalAppDataFolder(%LocalAppData%)
+                       └ INSTALLPARENT(Programs)        ← 安装界面里选/改这一层（父目录）
+                           └ INSTALLFOLDER(ToireMidi2Key)  ← 实际落地目录，所有文件都在这 -->
     <StandardDirectory Id="LocalAppDataFolder">
-      <Directory Id="ProgramsFolder" Name="Programs">
+      <Directory Id="INSTALLPARENT" Name="Programs">
         <Directory Id="INSTALLFOLDER" Name="ToireMidi2Key">
           <Component Id="AppExe" Guid="*">
             <File Id="AppExeFile" Source="build\app\ToireMidi2Key.exe" KeyPath="yes" />

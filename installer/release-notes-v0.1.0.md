@@ -15,11 +15,17 @@
 
 ### 安装包里有什么
 
-- **中文安装向导**：欢迎页 → 许可协议 → 确认 → 安装
-- **安装位置固定为** `%LocalAppData%\Programs\ToireMidi2Key`（用户目录，无需管理员权限）
-  - **为什么不让选安装目录**：如果允许把路径选成 `D:\` 或 `C:\`，程序文件（`ToireMidi2Key.exe`、`卸载.exe`、`README.md`、`LICENSE.txt`）会直接散落到盘根或系统目录里，**误删风险很高**。固定装进独立文件夹可以从结构上杜绝这个问题。
-  - **想装到别处（含中文路径）**：用下面的便携版 zip 解压到任意位置；或用命令行覆盖：
-    `msiexec /i ToireMidi2Key-0.1.0-Setup.msi INSTALLFOLDER="D:\临时文件\ToireMidi2Key"`
+- **中文安装向导**：欢迎页 → 许可协议（含 3 条安装提示）→ **选择安装位置** → 确认 → 安装
+- **自动父文件夹包裹（重要）**：向导里选的是「父目录」，程序会装进该目录下**同名的 `ToireMidi2Key` 子文件夹**
+  - 选 `E:\` → 实际装到 `E:\ToireMidi2Key\`
+  - 选 `D:\临时文件` → 实际装到 `D:\临时文件\ToireMidi2Key\`
+  - 因此**绝不会**把 `ToireMidi2Key.exe`、`卸载.exe`、`README.md`、`LICENSE.txt` 散落到盘根或系统目录里
+  - 默认父目录：`%LocalAppData%\Programs` → 实际装到 `%LocalAppData%\Programs\ToireMidi2Key`
+- **推荐以管理员身份安装**（尤其装到 `D:\` 等非系统盘时）
+  - 默认装到用户目录**不需要**管理员；装到其它盘时若报「无法设置文件的安全权限（错误 5）」，请关闭后**右键安装包 → 以管理员身份运行**
+  - 许可协议页里也写了这条提示
+- 命令行高级用法（显式指定时不再追加子目录）：
+  `msiexec /i ToireMidi2Key-0.1.0-Setup.msi INSTALLFOLDER="D:\临时文件\ToireMidi2Key"`
 - **快捷方式**：开始菜单 + 桌面
 - **安装目录里带 `卸载.exe`**（1.6 MB，双击即可卸载；开始菜单也有「卸载 ToireMidi2Key」入口）
 - **程序配置 `config.json` 就在安装目录里、和 exe 同目录**（不会写到 AppData 或别的盘）
