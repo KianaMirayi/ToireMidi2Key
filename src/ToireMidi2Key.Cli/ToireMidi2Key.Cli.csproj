@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <AssemblyName>ToireMidi2Key.Cli</AssemblyName>
+    <Version>0.1.0</Version>
+    <Product>ToireMidi2Key</Product>
+    <Description>把 MIDI 键盘当作电脑键盘用（命令行版）</Description>
+    <RootNamespace>ToireMidi2Key.Cli</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ToireMidi2Key.Core\ToireMidi2Key.Core.csproj" />
+  </ItemGroup>
+
+</Project>

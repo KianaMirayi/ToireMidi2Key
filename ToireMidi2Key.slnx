@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/ToireMidi2Key.App/ToireMidi2Key.App.csproj" />
+    <Project Path="src/ToireMidi2Key.Cli/ToireMidi2Key.Cli.csproj" />
+    <Project Path="src/ToireMidi2Key.Core/ToireMidi2Key.Core.csproj" />
+  </Folder>
+</Solution>

@@ -1,4 +1,4 @@
-# midi2key — 把 MIDI 键盘变成电脑键盘
+# ToireMidi2Key.Cli — 把 MIDI 键盘变成电脑键盘
 
 用真钢琴键盘（MIDI 键盘）当电脑键盘用：**弹哪个音，就等于按下那个电脑按键**。
 
@@ -17,12 +17,12 @@
 ## 目录结构
 
 ```
-midi2key/
-├─ Midi2Key.slnx
+ToireMidi2Key/
+├─ ToireMidi2Key.slnx
 ├─ src/
-│  ├─ Midi2Key.Core/     类库：winmm P/Invoke、SendInput、映射表、翻译引擎（零 UI 依赖）
-│  ├─ Midi2Key.Cli/      控制台：--list / --learn / --selftest / --probe / --demo / --run
-│  └─ Midi2Key.App/      Avalonia 12 + CommunityToolkit.Mvvm 图形界面
+│  ├─ ToireMidi2Key.Core/     类库：winmm P/Invoke、SendInput、映射表、翻译引擎（零 UI 依赖）
+│  ├─ ToireMidi2Key.Cli/      控制台：--list / --learn / --selftest / --probe / --demo / --run
+│  └─ ToireMidi2Key.App/      Avalonia 12 + CommunityToolkit.Mvvm 图形界面
 └─ docs/ui-screenshot.png
 ```
 
@@ -35,14 +35,14 @@ midi2key/
 ### 1. 编译
 
 ```powershell
-cd E:\Programing\FrontEndProjects\midi2key
-dotnet build Midi2Key.slnx
+cd E:\Programing\FrontEndProjects\ToireMidi2Key
+dotnet build ToireMidi2Key.slnx
 ```
 
 ### 2. 先做零风险验证（不碰游戏）
 
 ```powershell
-$cli = "src\Midi2Key.Cli\bin\Debug\net9.0\midi2key.exe"
+$cli = "src\ToireMidi2Key.Cli\bin\Debug\net9.0\ToireMidi2Key.Cli.exe"
 
 & $cli --list        # 有没有识别到你的 MIDI 键盘
 & $cli --selftest    # 离线自检：映射 / 和弦 / 黑键折叠 / 同音重触发，应输出 PASS
@@ -90,7 +90,7 @@ $cli = "src\Midi2Key.Cli\bin\Debug\net9.0\midi2key.exe"
 ### 5. 图形界面
 
 ```powershell
-dotnet run --project src\Midi2Key.App
+dotnet run --project src\ToireMidi2Key.App
 ```
 
 界面功能：设备下拉、启动/暂停、**学习模式**（弹一下琴键自动加一行映射）、映射表编辑、参数调节、日志。

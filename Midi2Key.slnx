@@ -1,7 +1,0 @@
-<Solution>
-  <Folder Name="/src/">
-    <Project Path="src/Midi2Key.App/Midi2Key.App.csproj" />
-    <Project Path="src/Midi2Key.Cli/Midi2Key.Cli.csproj" />
-    <Project Path="src/Midi2Key.Core/Midi2Key.Core.csproj" />
-  </Folder>
-</Solution>
