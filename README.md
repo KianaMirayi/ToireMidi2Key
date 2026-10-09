@@ -50,8 +50,8 @@
 ### 1. 编译
 
 ```powershell
-cd E:\Programing\FrontEndProjects\ToireMidi2Key
-dotnet build ToireMidi2Key.slnx        # Rider 用 .slnx；VSCode 用 ToireMidi2Key.sln
+# 在项目根目录（含 ToireMidi2Key.sln 的那一层）执行
+dotnet build ToireMidi2Key.sln         # VSCode 用 .sln；Rider 用 ToireMidi2Key.slnx
 ```
 
 ### 2. 零风险验证（不碰游戏）
