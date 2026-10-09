@@ -88,7 +88,7 @@ public partial class MainViewModel : ViewModelBase, IDisposable
         RefreshDevices();
         foreach (string warning in _bridge.Mapping.Warnings) AppendLog(warning);
 
-        AppendLog($"权限检测：TokenElevation={IsAdmin}  IsUserAnAdmin(旧接口)={CoreInfo.IsUserAnAdminLegacy()}  PID={Environment.ProcessId}");
+        AppendLog($"权限检测：{CoreInfo.DescribeElevation()}  PID={Environment.ProcessId}");
         AppendLog("就绪：选设备 → 点「启动」→ 打开游戏里的乐器界面。");
         AppendLog("暂停注入（或踩下 CC66 / ⏸ 按钮）后仍会监听 MIDI，方便用「学习模式」配置映射。");
         AppendLog($"配置文件：{_bridge.ConfigPath}");

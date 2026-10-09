@@ -33,24 +33,48 @@ public static class CoreInfo
     private static extern bool AvRevertMmThreadCharacteristics(IntPtr handle);
 
     private const uint TokenQuery = 0x0008;
-    private const int TokenElevationClass = 18;
 
-    /// <summary>
-    /// 权威判断：当前进程令牌是否"已提升"（= 真正以管理员身份在跑）。
-    /// 不用 shell32 的 IsUserAnAdmin —— 它已被微软标记废弃，实测不可靠。
-    /// </summary>
-    public static bool IsElevated()
+    // 注意别搞混这两个：
+    //   TokenElevation     = 20 → DWORD 0/1，权威的"是否已提升"
+    //   TokenElevationType = 18 → 1=Default 2=Full 3=Limited，只是类型
+    // 之前这里写成 18，导致读到 3（Limited）被当成"已提升"，判断全反。
+    private const int TokenElevationClass = 20;
+    private const int TokenElevationTypeClass = 18;
+
+    /// <summary>权威判断：当前进程令牌是否已提升（= 真正以管理员身份在跑）。</summary>
+    public static bool IsElevated() => ReadTokenUInt(TokenElevationClass) == 1;
+
+    /// <summary>1=Default（UAC 关闭或非管理员账户）2=Full（已提升）3=Limited（是管理员但被 UAC 限制）。</summary>
+    public static uint ElevationType() => ReadTokenUInt(TokenElevationTypeClass);
+
+    /// <summary>给日志用的一行诊断信息。</summary>
+    public static string DescribeElevation()
+    {
+        uint elevated = ReadTokenUInt(TokenElevationClass);
+        uint type = ElevationType();
+        string typeText = type switch
+        {
+            1 => "Default",
+            2 => "Full(已提升)",
+            3 => "Limited(UAC 受限)",
+            uint.MaxValue => "读取失败",
+            _ => $"未知({type})"
+        };
+        return $"TokenElevation={elevated} ({typeText})  IsUserAnAdmin(旧接口)={IsUserAnAdminLegacy()}  x64={Is64BitProcess}";
+    }
+
+    private static uint ReadTokenUInt(int informationClass)
     {
         IntPtr token = IntPtr.Zero;
         try
         {
-            if (!OpenProcessToken(GetCurrentProcess(), TokenQuery, out token)) return false;
-            if (!GetTokenInformation(token, TokenElevationClass, out uint elevated, 4, out _)) return false;
-            return elevated != 0;
+            if (!OpenProcessToken(GetCurrentProcess(), TokenQuery, out token)) return uint.MaxValue;
+            if (!GetTokenInformation(token, informationClass, out uint value, 4, out _)) return uint.MaxValue;
+            return value;
         }
         catch
         {
-            return false;
+            return uint.MaxValue;
         }
         finally
         {
