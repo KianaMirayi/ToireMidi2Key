@@ -15,8 +15,11 @@
 
 ### 安装包里有什么
 
-- **中文安装向导**：欢迎页 → 许可协议 → **可自行选择安装位置**（**支持中文路径**，例如 `D:\临时文件\ToireMidi2Key`）
-- **默认安装位置**：`%LocalAppData%\Programs\ToireMidi2Key`（用户目录，无需管理员权限）
+- **中文安装向导**：欢迎页 → 许可协议 → 确认 → 安装
+- **安装位置固定为** `%LocalAppData%\Programs\ToireMidi2Key`（用户目录，无需管理员权限）
+  - **为什么不让选安装目录**：如果允许把路径选成 `D:\` 或 `C:\`，程序文件（`ToireMidi2Key.exe`、`卸载.exe`、`README.md`、`LICENSE.txt`）会直接散落到盘根或系统目录里，**误删风险很高**。固定装进独立文件夹可以从结构上杜绝这个问题。
+  - **想装到别处（含中文路径）**：用下面的便携版 zip 解压到任意位置；或用命令行覆盖：
+    `msiexec /i ToireMidi2Key-0.1.0-Setup.msi INSTALLFOLDER="D:\临时文件\ToireMidi2Key"`
 - **快捷方式**：开始菜单 + 桌面
 - **安装目录里带 `卸载.exe`**（1.6 MB，双击即可卸载；开始菜单也有「卸载 ToireMidi2Key」入口）
 - **程序配置 `config.json` 就在安装目录里、和 exe 同目录**（不会写到 AppData 或别的盘）

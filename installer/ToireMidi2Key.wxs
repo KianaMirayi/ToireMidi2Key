@@ -2,16 +2,22 @@
 <!--
   ToireMidi2Key 安装包定义（WiX v5）
 
-  关键设计：
-  1) Scope="perUser" —— 每用户安装，默认装到 %LocalAppData%\Programs\ToireMidi2Key
-     · 不需要管理员权限、双击安装不弹 UAC
-     · 关键是这个目录【可写】—— 程序的 config.json 恒在 exe 同目录（AppContext.BaseDirectory），
-       装在 Program Files 会因为无写权限而存不下配置
-  2) 安装界面用 WixUI_InstallDir —— 带「许可协议」页和【选择安装位置】页，
-     用户可以改成任意路径（含中文路径，如 D:\临时文件\ToireMidi2Key）
-  3) 安装目录里带一个「卸载.exe」（Native AOT 编译，不依赖 .NET 运行时），
-     双击即可卸载；开始菜单也有对应快捷方式
-  4) Codepage=936 —— 界面与字符串含中文，必须指定中文代码页（WiX 默认 1252 会打包失败）
+  【为什么安装界面不提供「选择安装位置」】
+  曾经用 WixUI_InstallDir 让用户自选目录，但实测有严重隐患：
+    · 若用户把路径选成 D:\ 或 C:\，ToireMidi2Key.exe / 卸载.exe / README.md / LICENSE.txt
+      会直接散落到盘根或系统目录里，误删风险极高；
+    · 想用「用户选父目录 + 自动追加 ToireMidi2Key 子目录」补救也不行：
+      MSI 不会因为父目录属性被覆盖而重新推导子目录（日志实测 INSTALLROOT 变了、
+      INSTALLFOLDER 仍是默认值），改用自定义动作拼路径又会出现分隔符/取值时机问题。
+  所以现在：安装位置固定为 %LocalAppData%\Programs\ToireMidi2Key，
+  从结构上杜绝散落风险；需要自定义位置的高级用户可以用：
+    · 便携版 zip（解压到任意位置，含中文路径，config.json 仍在 exe 同目录）
+    · 或命令行：msiexec /i ToireMidi2Key-0.1.0-Setup.msi INSTALLFOLDER="D:\临时文件\ToireMidi2Key"
+
+  其它：
+    · Scope="perUser" 每用户安装，不需要管理员、不弹 UAC；目录可写，config.json 恒在 exe 同目录
+    · 安装目录里带「卸载.exe」（Native AOT，不依赖 .NET 运行时），开始菜单也有卸载入口
+    · Codepage=936：界面与字符串含中文，WiX 默认 1252 会打包失败
 -->
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
      xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
@@ -27,29 +33,26 @@
 
     <SummaryInformation Description="ToireMidi2Key —— 把 MIDI 键盘变成电脑键盘" />
 
-    <!-- 覆盖安装 / 升级：同版本可重装，降级给出提示 -->
     <MajorUpgrade AllowSameVersionUpgrades="yes"
                   DowngradeErrorMessage="已安装更高版本的 ToireMidi2Key，请先卸载后再装这一版。" />
     <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
 
-    <!-- 安装界面：欢迎 → 许可协议 → 选择安装位置（可改中文路径）→ 确认 → 安装 -->
-    <ui:WixUI Id="WixUI_InstallDir" InstallDirectory="INSTALLFOLDER" />
+    <!-- 安装界面：欢迎 → 许可协议 → 确认 → 安装（不含选择目录页，位置固定且安全） -->
+    <ui:WixUI Id="WixUI_Minimal" />
     <WixVariable Id="WixUILicenseRtf" Value="installer\license.rtf" />
 
-    <!-- 显式声明每用户安装：ALLUSERS=2 + MSIINSTALLPERUSER=1
-         → 双击安装不弹 UAC，装进用户目录（该目录可写，config.json 才能落在 exe 旁边） -->
+    <!-- 每用户安装：ALLUSERS=2 + MSIINSTALLPERUSER=1 -->
     <Property Id="ALLUSERS" Value="2" />
     <Property Id="MSIINSTALLPERUSER" Value="1" />
 
-    <!-- 控制面板「应用和功能」里的显示信息 -->
     <Icon Id="AppIcon" SourceFile="src\ToireMidi2Key.App\Assets\app.ico" />
     <Property Id="ARPPRODUCTICON" Value="AppIcon" />
     <Property Id="ARPHELPLINK" Value="https://github.com/KianaMirayi/ToireMidi2Key" />
     <Property Id="ARPCOMMENTS" Value="弹哪个音，就等于按下哪个电脑按键（MIDI 键盘 → 电脑键盘）" />
     <Property Id="ARPNOREPAIR" Value="1" />
 
-    <!-- 默认安装位置：%LocalAppData%\Programs\ToireMidi2Key（可写，config.json 就放这里）
-         用户可在安装界面改成任意路径（中文路径同样支持） -->
+    <!-- 固定安装位置：%LocalAppData%\Programs\ToireMidi2Key（目录可写，config.json 就放这里）
+         命令行的 INSTALLFOLDER 覆盖仍然有效（见文件头说明） -->
     <StandardDirectory Id="LocalAppDataFolder">
       <Directory Id="ProgramsFolder" Name="Programs">
         <Directory Id="INSTALLFOLDER" Name="ToireMidi2Key">
