@@ -16,13 +16,46 @@ public partial class MainWindow : Window
 
         // Avalonia 的 NumericUpDown 默认只在点上下箭头时才更新 Value：
         // 手动输入数字后按 Enter、或者点到别处，都不会提交。
-        // 这里在窗口层统一兜底，对所有数值框（包括以后新增的）都生效，不用逐个控件挂事件。
-        // 注意：KeyDown / PointerPressed 在 Avalonia 里是"冒泡"事件，
-        // 所以必须用 RoutingStrategies.Bubble（写 Tunnel 永远不会触发），
-        // 并用 handledEventsToo 保证子控件已处理时我们仍能收到。
+        // 这里在窗口层统一兜底，对所有数值框（包括以后新增的）都生效。
+        // 注意：KeyDown / PointerPressed 是"冒泡"事件，必须用 Bubble
+        //（写 Tunnel 永远不会触发），并用 handledEventsToo 保证子控件已处理时仍能收到。
         AddHandler(KeyDownEvent, OnWindowKeyDown, RoutingStrategies.Bubble, handledEventsToo: true);
         AddHandler(PointerPressedEvent, OnWindowPointerPressed, RoutingStrategies.Bubble, handledEventsToo: true);
     }
+
+    // ================= 自绘标题栏 =================
+
+    private void OnTitleBarPointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (IsOnChromeButton(e.Source)) return;                        // 点在窗口按钮上就不拖动
+        if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed) BeginMoveDrag(e);
+    }
+
+    private void OnTitleBarDoubleTapped(object? sender, TappedEventArgs e)
+    {
+        if (IsOnChromeButton(e.Source)) return;
+        ToggleMaximize();
+    }
+
+    private void OnMinimizeClick(object? sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
+
+    private void OnMaximizeClick(object? sender, RoutedEventArgs e) => ToggleMaximize();
+
+    private void OnCloseClick(object? sender, RoutedEventArgs e) => Close();
+
+    private void ToggleMaximize() =>
+        WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
+
+    private static bool IsOnChromeButton(object? source)
+    {
+        for (Visual? current = source as Visual; current is not null; current = current.GetVisualParent())
+        {
+            if (current is Button) return true;
+        }
+        return false;
+    }
+
+    // ================= 数值框提交 =================
 
     /// <summary>Enter / Tab = 确认输入。</summary>
     private void OnWindowKeyDown(object? sender, KeyEventArgs e)

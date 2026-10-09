@@ -11,6 +11,8 @@
         Icon="/Assets/avalonia-logo.ico"
         Title="ToireMidi2Key — MIDI 键盘 → 电脑键盘"
         Background="{DynamicResource GsWindowBackground}"
+        ExtendClientAreaToDecorationsHint="True"
+        WindowDecorations="BorderOnly"
         Width="1140" Height="700" MinWidth="960" MinHeight="560">
 
     <Design.DataContext>
@@ -87,6 +89,28 @@
             <Setter Property="Foreground" Value="#2B2118" />
         </Style>
 
+        <!-- ===== 自绘标题栏的窗口按钮 ===== -->
+        <Style Selector="Button.chrome">
+            <Setter Property="Background" Value="#00000000" />
+            <Setter Property="BorderBrush" Value="#00000000" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Foreground" Value="{DynamicResource GsCream}" />
+            <Setter Property="Width" Value="44" />
+            <Setter Property="Height" Value="28" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.chrome:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#33D3BC8E" />
+            <Setter Property="Foreground" Value="{DynamicResource GsGoldBright}" />
+        </Style>
+        <Style Selector="Button.chrome.close:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#C0392B" />
+            <Setter Property="Foreground" Value="#FFFFFF" />
+        </Style>
+
         <!-- ===== 输入控件 ===== -->
         <Style Selector="TextBox">
             <Setter Property="Background" Value="{DynamicResource GsPanelDeep}" />
@@ -100,6 +124,55 @@
             <Setter Property="BorderBrush" Value="{DynamicResource GsLine}" />
             <Setter Property="CornerRadius" Value="6" />
         </Style>
+        <!-- 下拉弹层：深底描金 -->
+        <Style Selector="ComboBox /template/ Border">
+            <Setter Property="Background" Value="{DynamicResource GsPanelDeep}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource GsGoldLine}" />
+        </Style>
+        <!-- 下拉项：悬停/选中走金色 -->
+        <Style Selector="ComboBoxItem">
+            <Setter Property="Foreground" Value="{DynamicResource GsCream}" />
+            <Setter Property="Padding" Value="10,6" />
+        </Style>
+        <Style Selector="ComboBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource GsHover}" />
+            <Setter Property="Foreground" Value="{DynamicResource GsGoldBright}" />
+        </Style>
+        <Style Selector="ComboBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#59D3BC8E" />
+            <Setter Property="Foreground" Value="{DynamicResource GsGoldBright}" />
+        </Style>
+
+        <!-- 数值框的上下箭头：收窄 + 描金（腾出空间给数字） -->
+        <Style Selector="NumericUpDown /template/ RepeatButton">
+            <Setter Property="Background" Value="#33FFFFFF" />
+            <Setter Property="Foreground" Value="{DynamicResource GsGold}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource GsLine}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="MinWidth" Value="18" />
+            <Setter Property="Width" Value="18" />
+        </Style>
+        <Style Selector="NumericUpDown /template/ Button">
+            <Setter Property="Background" Value="#33FFFFFF" />
+            <Setter Property="Foreground" Value="{DynamicResource GsGold}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource GsLine}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="MinWidth" Value="18" />
+            <Setter Property="Width" Value="18" />
+        </Style>
+        <Style Selector="NumericUpDown /template/ RepeatButton:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource GsHover}" />
+            <Setter Property="Foreground" Value="{DynamicResource GsGoldBright}" />
+        </Style>
+        <Style Selector="NumericUpDown /template/ Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource GsHover}" />
+            <Setter Property="Foreground" Value="{DynamicResource GsGoldBright}" />
+        </Style>
+
         <Style Selector="CheckBox">
             <Setter Property="Foreground" Value="{DynamicResource GsCream}" />
         </Style>
@@ -112,151 +185,176 @@
         </Style>
     </Window.Styles>
 
-    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="14" RowSpacing="10">
+    <!-- 整窗描金外框（自绘标题栏后，系统标题栏已隐藏） -->
+    <Border BorderBrush="{DynamicResource GsGold}" BorderThickness="1" CornerRadius="10" ClipToBounds="True">
+        <Grid RowDefinitions="Auto,*">
 
-        <!-- 权限状态 + 自动提权开关 -->
-        <Border Grid.Row="0" Classes="card" Padding="10,8">
-            <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="10">
-                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
-                    <Border IsVisible="{Binding IsAdmin}" VerticalAlignment="Center"
-                            Background="#2F6B52" BorderBrush="{DynamicResource GsGoldLine}" BorderThickness="1"
-                            CornerRadius="4" Padding="9,4">
-                        <TextBlock Classes="badge" Text="✔ 管理员" Foreground="#D9F2E4" />
-                    </Border>
-                    <Border IsVisible="{Binding !IsAdmin}" VerticalAlignment="Center"
-                            Background="#8A4B2A" BorderBrush="{DynamicResource GsGoldLine}" BorderThickness="1"
-                            CornerRadius="4" Padding="9,4">
-                        <TextBlock Classes="badge" Text="⚠ 非管理员" Foreground="#FFE0B2" />
-                    </Border>
-                </StackPanel>
-
-                <TextBlock Grid.Column="1" Classes="adminHint" Text="{Binding AdminHint}" />
-
-                <CheckBox Grid.Column="2" IsChecked="{Binding AutoElevate}"
-                          Content="启动时自动以管理员身份运行"
-                          ToolTip.Tip="勾选并保存后，下次启动会自动弹 UAC 提权；调试器附加时会自动跳过" />
-
-                <Button Grid.Column="3" Content="以管理员重启" Command="{Binding RestartAsAdminCommand}"
-                        IsVisible="{Binding !IsAdmin}" />
-            </Grid>
-        </Border>
-
-        <!-- 设备与运行控制 -->
-        <Border Grid.Row="1" Classes="card">
-            <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto,Auto,Auto" ColumnSpacing="8">
-                <TextBlock Grid.Column="0" Classes="label" Text="MIDI 设备" />
-                <ComboBox Grid.Column="1" Width="300" ItemsSource="{Binding Devices}"
-                          SelectedItem="{Binding SelectedDevice}">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate x:DataType="core:MidiDeviceInfo">
-                            <TextBlock Text="{Binding Name}" />
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
-                <Button Grid.Column="2" Content="刷新" Command="{Binding RefreshDevicesCommand}" />
-                <TextBlock Grid.Column="3" Classes="hint" Text="{Binding DeviceSummary}"
-                           TextTrimming="CharacterEllipsis" />
-                <Button Grid.Column="4" Classes="primary" MinWidth="96" Content="{Binding StartStopText}"
-                        Command="{Binding StartStopCommand}" />
-                <Button Grid.Column="5" MinWidth="96" Content="{Binding PauseButtonText}"
-                        Command="{Binding TogglePauseCommand}" />
-                <Button Grid.Column="6" Content="紧急松开" Command="{Binding PanicCommand}" />
-            </Grid>
-        </Border>
-
-        <!-- 映射表 + 状态/日志 -->
-        <Grid Grid.Row="2" ColumnDefinitions="*,380" ColumnSpacing="10">
-
-            <Border Grid.Column="0" Classes="card">
-                <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="8">
-                    <TextBlock Grid.Row="0" Classes="title" Text="映射表　MIDI 音 → 电脑按键" />
-                    <Grid Grid.Row="1" ColumnDefinitions="110,210,110,*" ColumnSpacing="8">
-                        <TextBlock Grid.Column="0" Classes="hint" Text="音号 / 音名" />
-                        <TextBlock Grid.Column="1" Classes="hint" Text="音名对照（避免 C3/C4 歧义）" />
-                        <TextBlock Grid.Column="2" Classes="hint" Text="电脑按键" />
-                        <TextBlock Grid.Column="3" Classes="hint" Text="操作" />
-                    </Grid>
-
-                    <ScrollViewer Grid.Row="2" HorizontalScrollBarVisibility="Disabled">
-                        <ItemsControl ItemsSource="{Binding Rows}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="vm:MappingRowViewModel">
-                                    <Grid ColumnDefinitions="110,210,110,*" ColumnSpacing="8" Margin="0,0,0,3">
-                                        <TextBox Grid.Column="0" Text="{Binding NoteText}" PlaceholderText="48 或 C3" />
-                                        <TextBlock Grid.Column="1" Classes="hint" Text="{Binding NoteDescription}" />
-                                        <TextBox Grid.Column="2" Text="{Binding KeyText}" PlaceholderText="Z" />
-                                        <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="6">
-                                            <TextBlock Text="●" Foreground="{DynamicResource GsGoldBright}" IsVisible="{Binding IsHighlighted}"
-                                                       VerticalAlignment="Center" ToolTip.Tip="最近学到的音" />
-                                            <Button Content="删除" Command="{Binding DeleteCommand}" />
-                                        </StackPanel>
-                                    </Grid>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </ScrollViewer>
-
-                    <WrapPanel Grid.Row="3" Orientation="Horizontal" ItemSpacing="6" LineSpacing="6">
-                        <Button Content="＋ 添加一行" Command="{Binding AddRowCommand}" />
-                        <Button Content="套用原神乐器预设" Command="{Binding ApplyGenshinPresetCommand}" />
-                        <TextBlock Classes="label" Text="预设最低音" />
-                        <NumericUpDown Width="100" Minimum="12" Maximum="96" Increment="1"
-                                       Value="{Binding PresetBaseNote}" />
-                        <Button Classes="primary" Content="保存配置" Command="{Binding SaveConfigCommand}" />
-                        <Button Content="重新载入" Command="{Binding ReloadConfigCommand}" />
-                    </WrapPanel>
-                </Grid>
-            </Border>
-
-            <Border Grid.Column="1" Classes="card">
-                <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" RowSpacing="8">
-                    <TextBlock Grid.Row="0" Classes="title" Text="状态 / 监听" />
-
-                    <CheckBox Grid.Row="1" IsChecked="{Binding LearnMode}"
-                              Content="学习模式：弹一下琴键，自动加一行映射" />
-
-                    <StackPanel Grid.Row="2" Spacing="2">
-                        <TextBlock Classes="hint" Text="{Binding StatusText}" />
-                        <TextBlock Classes="hint" Text="{Binding LastNoteText}" />
-                        <TextBlock Classes="hint" Text="{Binding LastControlText}" />
-                        <TextBlock Classes="hint" Text="{Binding LatencyText}" />
+            <!-- ===== 标题栏 ===== -->
+            <Border Grid.Row="0" Background="{DynamicResource GsPanel}"
+                    BorderBrush="{DynamicResource GsGoldLine}" BorderThickness="0,0,0,1"
+                    PointerPressed="OnTitleBarPointerPressed"
+                    DoubleTapped="OnTitleBarDoubleTapped">
+                <Grid ColumnDefinitions="Auto,*,Auto" Margin="12,0" Height="42">
+                    <TextBlock Grid.Column="0" Text="ToireMidi2Key" FontSize="13" FontWeight="SemiBold"
+                               Foreground="{DynamicResource GsGold}" VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="1" Text="MIDI 键盘 → 电脑键盘" FontSize="11" Margin="10,0,0,0"
+                               Foreground="{DynamicResource GsTextDim}" VerticalAlignment="Center" />
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+                        <Button Classes="chrome" Content="—" Click="OnMinimizeClick" ToolTip.Tip="最小化" />
+                        <Button Classes="chrome" Content="□" Click="OnMaximizeClick" ToolTip.Tip="最大化 / 还原" />
+                        <Button Classes="chrome close" Content="✕" Click="OnCloseClick" ToolTip.Tip="关闭" />
                     </StackPanel>
-
-                    <ListBox Grid.Row="3" ItemsSource="{Binding Logs}" FontSize="11"
-                             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-                        <ListBox.ItemTemplate>
-                            <DataTemplate x:DataType="sys:String">
-                                <TextBlock Text="{Binding}" TextWrapping="Wrap" />
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
-
-                    <Button Grid.Row="4" HorizontalAlignment="Right" Content="清空日志"
-                            Command="{Binding ClearLogCommand}" />
                 </Grid>
             </Border>
+
+            <!-- ===== 主体 ===== -->
+            <Grid Grid.Row="1" RowDefinitions="Auto,Auto,*,Auto" Margin="14" RowSpacing="10">
+
+                <!-- 权限状态 + 自动提权开关 -->
+                <Border Grid.Row="0" Classes="card" Padding="10,8">
+                    <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="10">
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
+                            <Border IsVisible="{Binding IsAdmin}" VerticalAlignment="Center"
+                                    Background="#2F6B52" BorderBrush="{DynamicResource GsGoldLine}" BorderThickness="1"
+                                    CornerRadius="4" Padding="9,4">
+                                <TextBlock Classes="badge" Text="✔ 管理员" Foreground="#D9F2E4" />
+                            </Border>
+                            <Border IsVisible="{Binding !IsAdmin}" VerticalAlignment="Center"
+                                    Background="#8A4B2A" BorderBrush="{DynamicResource GsGoldLine}" BorderThickness="1"
+                                    CornerRadius="4" Padding="9,4">
+                                <TextBlock Classes="badge" Text="⚠ 非管理员" Foreground="#FFE0B2" />
+                            </Border>
+                        </StackPanel>
+
+                        <TextBlock Grid.Column="1" Classes="adminHint" Text="{Binding AdminHint}" />
+
+                        <CheckBox Grid.Column="2" IsChecked="{Binding AutoElevate}"
+                                  Content="启动时自动以管理员身份运行"
+                                  ToolTip.Tip="勾选并保存后，下次启动会自动弹 UAC 提权；调试器附加时会自动跳过" />
+
+                        <Button Grid.Column="3" Content="以管理员重启" Command="{Binding RestartAsAdminCommand}"
+                                IsVisible="{Binding !IsAdmin}" />
+                    </Grid>
+                </Border>
+
+                <!-- 设备与运行控制 -->
+                <Border Grid.Row="1" Classes="card">
+                    <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto,Auto,Auto" ColumnSpacing="8">
+                        <TextBlock Grid.Column="0" Classes="label" Text="MIDI 设备" />
+                        <ComboBox Grid.Column="1" Width="300" ItemsSource="{Binding Devices}"
+                                  SelectedItem="{Binding SelectedDevice}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="core:MidiDeviceInfo">
+                                    <TextBlock Text="{Binding Name}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                        <Button Grid.Column="2" Content="刷新" Command="{Binding RefreshDevicesCommand}" />
+                        <TextBlock Grid.Column="3" Classes="hint" Text="{Binding DeviceSummary}"
+                                   TextTrimming="CharacterEllipsis" />
+                        <Button Grid.Column="4" Classes="primary" MinWidth="96" Content="{Binding StartStopText}"
+                                Command="{Binding StartStopCommand}" />
+                        <Button Grid.Column="5" MinWidth="96" Content="{Binding PauseButtonText}"
+                                Command="{Binding TogglePauseCommand}" />
+                        <Button Grid.Column="6" Content="紧急松开" Command="{Binding PanicCommand}" />
+                    </Grid>
+                </Border>
+
+                <!-- 映射表 + 状态/日志 -->
+                <Grid Grid.Row="2" ColumnDefinitions="*,380" ColumnSpacing="10">
+
+                    <Border Grid.Column="0" Classes="card">
+                        <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="8">
+                            <TextBlock Grid.Row="0" Classes="title" Text="映射表　MIDI 音 → 电脑按键" />
+                            <Grid Grid.Row="1" ColumnDefinitions="110,210,110,*" ColumnSpacing="8">
+                                <TextBlock Grid.Column="0" Classes="hint" Text="音号 / 音名" />
+                                <TextBlock Grid.Column="1" Classes="hint" Text="音名对照（避免 C3/C4 歧义）" />
+                                <TextBlock Grid.Column="2" Classes="hint" Text="电脑按键" />
+                                <TextBlock Grid.Column="3" Classes="hint" Text="操作" />
+                            </Grid>
+
+                            <ScrollViewer Grid.Row="2" HorizontalScrollBarVisibility="Disabled">
+                                <ItemsControl ItemsSource="{Binding Rows}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:MappingRowViewModel">
+                                            <Grid ColumnDefinitions="110,210,110,*" ColumnSpacing="8" Margin="0,0,0,3">
+                                                <TextBox Grid.Column="0" Text="{Binding NoteText}" PlaceholderText="48 或 C3" />
+                                                <TextBlock Grid.Column="1" Classes="hint" Text="{Binding NoteDescription}" />
+                                                <TextBox Grid.Column="2" Text="{Binding KeyText}" PlaceholderText="Z" />
+                                                <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="6">
+                                                    <TextBlock Text="●" Foreground="{DynamicResource GsGoldBright}" IsVisible="{Binding IsHighlighted}"
+                                                               VerticalAlignment="Center" ToolTip.Tip="最近学到的音" />
+                                                    <Button Content="删除" Command="{Binding DeleteCommand}" />
+                                                </StackPanel>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+
+                            <WrapPanel Grid.Row="3" Orientation="Horizontal" ItemSpacing="6" LineSpacing="6">
+                                <Button Content="＋ 添加一行" Command="{Binding AddRowCommand}" />
+                                <Button Content="套用原神乐器预设" Command="{Binding ApplyGenshinPresetCommand}" />
+                                <TextBlock Classes="label" Text="预设最低音" />
+                                <NumericUpDown Width="112" Minimum="12" Maximum="96" Increment="1"
+                                               Value="{Binding PresetBaseNote}" />
+                                <Button Classes="primary" Content="保存配置" Command="{Binding SaveConfigCommand}" />
+                                <Button Content="重新载入" Command="{Binding ReloadConfigCommand}" />
+                            </WrapPanel>
+                        </Grid>
+                    </Border>
+
+                    <Border Grid.Column="1" Classes="card">
+                        <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" RowSpacing="8">
+                            <TextBlock Grid.Row="0" Classes="title" Text="状态 / 监听" />
+
+                            <CheckBox Grid.Row="1" IsChecked="{Binding LearnMode}"
+                                      Content="学习模式：弹一下琴键，自动加一行映射" />
+
+                            <StackPanel Grid.Row="2" Spacing="2">
+                                <TextBlock Classes="hint" Text="{Binding StatusText}" />
+                                <TextBlock Classes="hint" Text="{Binding LastNoteText}" />
+                                <TextBlock Classes="hint" Text="{Binding LastControlText}" />
+                                <TextBlock Classes="hint" Text="{Binding LatencyText}" />
+                            </StackPanel>
+
+                            <ListBox Grid.Row="3" ItemsSource="{Binding Logs}" FontSize="11"
+                                     ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate x:DataType="sys:String">
+                                        <TextBlock Text="{Binding}" TextWrapping="Wrap" />
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+
+                            <Button Grid.Row="4" HorizontalAlignment="Right" Content="清空日志"
+                                    Command="{Binding ClearLogCommand}" />
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <!-- 参数 -->
+                <Border Grid.Row="3" Classes="card">
+                    <WrapPanel Orientation="Horizontal" ItemSpacing="10" LineSpacing="8">
+                        <TextBlock Classes="label" Text="注入方式" />
+                        <ComboBox Width="130" ItemsSource="{Binding ModeOptions}" SelectedItem="{Binding Mode}"
+                                  ToolTip.Tip="scancode = 发硬件扫描码（默认，游戏/DirectInput 认这个）；vk = 发虚拟键码（个别老程序只认这个）。游戏没反应时可以切换试试" />
+
+                        <TextBlock Classes="label" Text="最小重触发(ms)" />
+                        <NumericUpDown Width="112" Minimum="0" Maximum="300" Increment="5"
+                                       Value="{Binding MinRetriggerMs}" />
+
+                        <TextBlock Classes="label" Text="和弦错峰(ms)" />
+                        <NumericUpDown Width="112" Minimum="0" Maximum="100" Increment="1"
+                                       Value="{Binding ChordSpreadMs}" />
+
+                        <Button Content="打开配置目录" Command="{Binding OpenConfigFolderCommand}" />
+
+                        <TextBlock Classes="hint" Text="{Binding ConfigPathText}" TextTrimming="CharacterEllipsis" />
+                        <TextBlock Classes="hint" Text="{Binding NotesPlayed, StringFormat='已演奏 {0} 个音'}" />
+                    </WrapPanel>
+                </Border>
+            </Grid>
         </Grid>
-
-        <!-- 参数 -->
-        <Border Grid.Row="3" Classes="card">
-            <WrapPanel Orientation="Horizontal" ItemSpacing="10" LineSpacing="8">
-                <TextBlock Classes="label" Text="注入方式" />
-                <ComboBox Width="130" ItemsSource="{Binding ModeOptions}" SelectedItem="{Binding Mode}"
-                          ToolTip.Tip="scancode = 发硬件扫描码（默认，游戏/DirectInput 认这个）；vk = 发虚拟键码（个别老程序只认这个）。游戏没反应时可以切换试试" />
-
-                <TextBlock Classes="label" Text="最小重触发(ms)" />
-                <NumericUpDown Width="110" Minimum="0" Maximum="300" Increment="5"
-                               Value="{Binding MinRetriggerMs}" />
-
-                <TextBlock Classes="label" Text="和弦错峰(ms)" />
-                <NumericUpDown Width="110" Minimum="0" Maximum="100" Increment="1"
-                               Value="{Binding ChordSpreadMs}" />
-
-                <Button Content="打开配置目录" Command="{Binding OpenConfigFolderCommand}" />
-
-                <TextBlock Classes="hint" Text="{Binding ConfigPathText}" TextTrimming="CharacterEllipsis" />
-                <TextBlock Classes="hint" Text="{Binding NotesPlayed, StringFormat='已演奏 {0} 个音'}" />
-            </WrapPanel>
-        </Border>
-    </Grid>
+    </Border>
 </Window>
