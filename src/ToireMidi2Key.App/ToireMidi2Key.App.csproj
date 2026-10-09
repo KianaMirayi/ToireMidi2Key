@@ -9,6 +9,7 @@
     <Version>0.1.0</Version>
     <Product>ToireMidi2Key</Product>
     <Description>把 MIDI 键盘当作电脑键盘用（图形界面版）</Description>
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
 

@@ -9,7 +9,7 @@
         mc:Ignorable="d" d:DesignWidth="1140" d:DesignHeight="700"
         x:Class="ToireMidi2Key.App.Views.MainWindow"
         x:DataType="vm:MainViewModel"
-        Icon="/Assets/avalonia-logo.ico"
+        Icon="/Assets/app.ico"
         Title="ToireMidi2Key — MIDI 键盘 → 电脑键盘"
         Background="Transparent"
         TransparencyLevelHint="Transparent"
