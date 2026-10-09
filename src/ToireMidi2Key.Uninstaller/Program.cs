@@ -5,11 +5,16 @@
 // 为什么不写死 ProductCode：ProductCode 是每次打包时生成的，写死的话重新打包后这个 exe 就失效了。
 // 用「注册表查找」则任何版本都能正确卸载。
 //
+// 权限：本程序是每用户安装的，一般不需要管理员就能卸载；
+//       但如果卸载失败或提示权限不足（例如从「设置 → 应用」卸载、或程序被以管理员身份装过），
+//       就需要以管理员身份运行本程序 —— 运行时会打印这条提示。
+//
 // 参数：
 //   --yes / -y    跳过确认（脚本里用）
 //   --quiet / -q  结束后不等待按键
 
 using System.Diagnostics;
+using System.Security.Principal;
 using Microsoft.Win32;
 
 namespace ToireMidi2Key.Uninstaller;
@@ -23,7 +28,7 @@ internal static class Program
         var autoYes = args.Any(a => a is "--yes" or "-y");
         var quiet = args.Any(a => a is "--quiet" or "-q");
 
-        // 关键：本程序就在安装目录里，而卸载时 MSI 需要删除它自己。
+        // 本程序就在安装目录里，而卸载时 MSI 需要删除它自己。
         // 直接从这里调用 msiexec，Windows Installer 会弹出
         // 「下列应用程序应该关闭才能继续安装：uninstall」并卡住。
         // 所以先把自己复制到 %TEMP% 再从那里重启，本进程立刻退出（复制件不在安装目录，不占用被删文件）。
@@ -49,9 +54,15 @@ internal static class Program
         try { Console.OutputEncoding = System.Text.Encoding.UTF8; } catch { /* 控制台编码失败不影响卸载 */ }
         try { Console.Title = "卸载 ToireMidi2Key"; } catch { }
 
+        var isAdmin = IsElevated();
+
         Console.WriteLine();
         Console.WriteLine("  ToireMidi2Key 卸载程序");
         Console.WriteLine("  ────────────────────────────────");
+        Console.WriteLine("  当前权限：" + (isAdmin ? "管理员 ✓" : "普通用户"));
+        Console.WriteLine("  👉 提示：建议【以管理员身份运行】本程序来卸载；");
+        Console.WriteLine("     如果卸载失败或提示权限不足，请右键本程序 →「以管理员身份运行」后重试。");
+        Console.WriteLine();
 
         var found = FindProducts();
         if (found.Count == 0)
@@ -89,6 +100,7 @@ internal static class Program
         }
 
         var failed = 0;
+        var permissionProblem = false;
         foreach (var item in found)
         {
             Console.WriteLine("  正在卸载…（会显示一个进度窗口）");
@@ -100,10 +112,13 @@ internal static class Program
                 };
                 using var proc = Process.Start(startInfo);
                 proc?.WaitForExit();
-                if (proc is null || proc.ExitCode != 0)
+                var code = proc?.ExitCode ?? -1;
+                if (proc is null || code != 0)
                 {
                     failed++;
-                    Console.WriteLine("  ✗ 卸载失败，msiexec 退出码 " + (proc is null ? "?" : proc.ExitCode.ToString()));
+                    // 1925=权限不足 1730=权限不足 1603=致命错误（常见于权限问题）
+                    if (code is 1925 or 1730 or 1603) permissionProblem = true;
+                    Console.WriteLine("  ✗ 卸载失败，msiexec 退出码 " + (proc is null ? "?" : code.ToString()));
                 }
                 else
                 {
@@ -125,11 +140,34 @@ internal static class Program
         }
         else
         {
-            Console.WriteLine("  有项目卸载失败，可以到「设置 → 应用 → 已安装的应用」里手动卸载。");
+            Console.WriteLine("  有项目卸载失败。");
+            if (permissionProblem && !isAdmin)
+            {
+                Console.WriteLine("  👉 看起来是权限不足：请关闭本窗口，右键本程序 →「以管理员身份运行」再试一次。");
+            }
+            else
+            {
+                Console.WriteLine("  👉 可以换成管理员身份重试（右键 →「以管理员身份运行」），");
+                Console.WriteLine("     或到「设置 → 应用 → 已安装的应用」里手动卸载。");
+            }
         }
 
         Pause(quiet);
         return failed == 0 ? 0 : 1;
+    }
+
+    /// <summary>当前进程是否以管理员（提升后）权限运行。</summary>
+    private static bool IsElevated()
+    {
+        try
+        {
+            using var identity = WindowsIdentity.GetCurrent();
+            return new WindowsPrincipal(identity).IsInRole(WindowsBuiltInRole.Administrator);
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     /// <summary>在 HKCU / HKLM（64 位与 32 位视图）的卸载项里查找本程序，返回产品代码与安装位置。</summary>
