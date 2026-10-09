@@ -3,11 +3,8 @@ using System.Collections.Concurrent;
 namespace Midi2Key.Cli;
 
 /// <summary>
-/// 异步控制台日志。
-///
-/// 为什么需要它：写控制台（尤其是 Windows 终端，中文还会走 WriteConsoleW + 滚动重绘）
-/// 单次可能花 1~20ms。引擎线程一旦同步写日志，就会卡住后面所有音符的按键注入——
-/// 这就是"日志一开就感觉有延迟"的原因。所以日志全部丢给独立线程，热路径只入队。
+/// 异步控制台日志：写终端单次可能花 1~20ms，同步写会卡住引擎线程的按键注入，
+/// 所以日志交给独立线程，热路径只入队（队列满就丢）。
 /// </summary>
 internal sealed class AsyncConsoleLog : IDisposable
 {

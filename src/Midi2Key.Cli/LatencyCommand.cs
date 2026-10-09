@@ -2,10 +2,7 @@ using Midi2Key;
 
 namespace Midi2Key.Cli;
 
-/// <summary>
-/// 延迟测量：先量化，再优化。
-/// 本程序只能测"自己的那一段"，所以报告里把它和 WinMM 驱动、游戏帧采样分开说清楚。
-/// </summary>
+/// <summary>延迟测量：只测本程序自己那一段，报告里与驱动/游戏那部分分开说明。</summary>
 internal static partial class Program
 {
     private static int CmdLatency(int? deviceOverride, int simulateCount)

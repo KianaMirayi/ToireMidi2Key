@@ -5,6 +5,9 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
+    <Version>0.1.0</Version>
+    <Product>midi2key</Product>
+    <Description>把 MIDI 键盘当作电脑键盘用（图形界面版）</Description>
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
 

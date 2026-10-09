@@ -4,6 +4,9 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net9.0</TargetFramework>
     <AssemblyName>midi2key</AssemblyName>
+    <Version>0.1.0</Version>
+    <Product>midi2key</Product>
+    <Description>把 MIDI 键盘当作电脑键盘用（命令行版）</Description>
     <RootNamespace>Midi2Key.Cli</RootNamespace>
     <LangVersion>latest</LangVersion>
     <Nullable>disable</Nullable>

@@ -53,7 +53,6 @@ public sealed class BridgeEngine : IDisposable
     public int NotesPlayed { get; private set; }
     public bool LogNotes { get; set; } = true;
 
-    // ---------------------------------------------------------------- 延迟统计
     /// <summary>MIDI 回调入口 → 入队（我们自己这段代码的耗时）。</summary>
     public LatencyStats CallbackStats { get; } = new();
     /// <summary>入队 → 工作线程拾起（线程唤醒延迟）。</summary>
@@ -98,7 +97,6 @@ public sealed class BridgeEngine : IDisposable
         _worker.Start();
     }
 
-    // ---------------------------------------------------------------- 对外投递
 
     public void PostNoteOn(int note, int velocity, long callbackTimestamp = 0) =>
         Post(() => HandleNoteOn(note, velocity), callbackTimestamp);
@@ -152,7 +150,6 @@ public sealed class BridgeEngine : IDisposable
         });
     }
 
-    // ---------------------------------------------------------------- 工作线程
 
     private void Loop()
     {
@@ -242,7 +239,6 @@ public sealed class BridgeEngine : IDisposable
 
     private void Schedule(double due, Action action) => _timers.Add((due, action));
 
-    // ---------------------------------------------------------------- 音符处理
 
     private void HandleNoteOn(int note, int velocity)
     {
@@ -355,7 +351,6 @@ public sealed class BridgeEngine : IDisposable
         }
     }
 
-    // ---------------------------------------------------------------- 按键状态机
 
     private void PressKey(string keyName, ushort vk)
     {

@@ -90,7 +90,6 @@ public partial class MainViewModel : ViewModelBase, IDisposable
         _uiTimer.Start();
     }
 
-    // ------------------------------------------------------------------ 配置 <-> 界面
 
     private void LoadFromConfig(Midi2KeyConfig config)
     {
@@ -136,7 +135,6 @@ public partial class MainViewModel : ViewModelBase, IDisposable
         _bridge.ApplyConfig(config);
     }
 
-    // ------------------------------------------------------------------ 命令
 
     [RelayCommand]
     private void RefreshDevices()
@@ -269,7 +267,6 @@ public partial class MainViewModel : ViewModelBase, IDisposable
         }
     }
 
-    // ------------------------------------------------------------------ 事件回调（非 UI 线程 → 切回 UI 线程）
 
     private void OnBridgeLog(string message) => AppendLog(message);   // 只入队，不碰界面
 
@@ -323,7 +320,6 @@ public partial class MainViewModel : ViewModelBase, IDisposable
         StatusText = !IsRunning ? "未启动" : IsPaused ? "运行中（已暂停注入）" : "运行中";
     }
 
-    // ------------------------------------------------------------------ 界面刷新（每 150ms 一次，避开热路径）
 
     private void FlushUi()
     {

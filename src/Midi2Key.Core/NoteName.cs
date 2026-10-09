@@ -4,12 +4,8 @@ namespace Midi2Key;
 
 /// <summary>
 /// MIDI 音号 &lt;-&gt; 音名。
-///
-/// 这里有个所有 MIDI 工具都会踩的坑：中央 C（MIDI 60）到底叫 C4 还是 C3？
-///   - scientific（科学音名，Yamaha 之外的多数软件/DAW）：60 = C4
-///   - yamaha（很多硬件键盘面板上的标注）：60 = C3
-/// 所以 --learn 会同时打印两种写法，配置项 noteNaming 决定按哪种解释你写的音名。
-/// 拿不准就写 MIDI 音号（0~127），永远不会有歧义。
+/// 坑：中央 C（MIDI 60）在 scientific 里叫 C4、在 Yamaha 硬件上叫 C3，
+/// 所以 --learn 同时打印两种写法；拿不准就直接写音号（0~127）。
 /// </summary>
 public static class NoteName
 {

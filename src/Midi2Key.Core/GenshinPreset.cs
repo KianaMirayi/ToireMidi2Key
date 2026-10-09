@@ -12,10 +12,7 @@ public static class GenshinPreset
     /// <summary>默认最低音 = MIDI 48（科学音名 C3 / Yamaha 音名 C2）。</summary>
     public const int DefaultBaseNote = 48;
 
-    /// <summary>
-    /// 生成 21 个音的映射：连续三个八度的白键，依次落到 Z 排 / A 排 / Q 排。
-    /// 键用 MIDI 音号字符串，避免 C3/C4 命名歧义。
-    /// </summary>
+    /// <summary>生成 21 个音的映射：三个八度的白键依次落到 Z / A / Q 排。键用音号，避免命名歧义。</summary>
     public static Dictionary<string, string> Build(int baseNote = DefaultBaseNote)
     {
         var map = new Dictionary<string, string>();

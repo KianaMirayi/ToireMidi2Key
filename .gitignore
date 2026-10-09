@@ -3,5 +3,9 @@ bin/
 obj/
 *.user
 *.suo
-.vs/
 build.log
+
+## 工具 / 产物
+.idea/
+.vs/
+dist/

@@ -2,10 +2,7 @@ using Midi2Key;
 
 namespace Midi2Key.App.Services;
 
-/// <summary>
-/// ViewModel 只依赖这个接口，永远不碰 P/Invoke。
-/// 所有事件都可能从非 UI 线程触发，订阅方负责切回 UI 线程。
-/// </summary>
+/// <summary>ViewModel 只依赖这个接口，不碰 P/Invoke。事件可能来自非 UI 线程。</summary>
 public interface IBridgeService : IDisposable
 {
     bool IsRunning { get; }

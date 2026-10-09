@@ -41,7 +41,6 @@
 
     <Grid RowDefinitions="Auto,*,Auto" Margin="14" RowSpacing="10">
 
-        <!-- ================= 顶部：设备 + 运行控制 ================= -->
         <Border Grid.Row="0" Classes="card">
             <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto,Auto,Auto" ColumnSpacing="8">
                 <TextBlock Grid.Column="0" Classes="label" Text="MIDI 设备" />
@@ -64,7 +63,6 @@
             </Grid>
         </Border>
 
-        <!-- ================= 中间：映射表 + 状态/日志 ================= -->
         <Grid Grid.Row="1" ColumnDefinitions="*,380" ColumnSpacing="10">
 
             <Border Grid.Column="0" Classes="card">
@@ -137,7 +135,6 @@
             </Border>
         </Grid>
 
-        <!-- ================= 底部：参数 + 权限 ================= -->
         <Border Grid.Row="2" Classes="card">
             <WrapPanel Orientation="Horizontal" ItemSpacing="10" LineSpacing="8">
                 <TextBlock Classes="label" Text="注入方式" />

@@ -1,9 +1,6 @@
 namespace Midi2Key;
 
-/// <summary>
-/// 毫秒级延迟采样器（滚动窗口 + 百分位）。
-/// 线程安全：MIDI 回调线程、引擎线程、UI 线程都可能往里写。
-/// </summary>
+/// <summary>毫秒级延迟采样器（滚动窗口 + 百分位），线程安全。</summary>
 public sealed class LatencyStats
 {
     private readonly object _gate = new();

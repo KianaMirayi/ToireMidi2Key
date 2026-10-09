@@ -32,11 +32,7 @@ public static class CoreInfo
 
     public static bool Is64BitProcess => IntPtr.Size == 8;
 
-    /// <summary>
-    /// 把系统定时器精度提到 1ms。
-    /// Windows 默认定时器精度是 15.6ms——"延迟按下 / 同音重触发 / 和弦错峰"这几个
-    /// 靠定时器的地方会被这个精度拖慢最多十几毫秒，所以必须提。
-    /// </summary>
+    /// <summary>把系统定时器精度提到 1ms（默认 15.6ms 会拖慢"延迟按下/重触发/和弦错峰"）。</summary>
     public static void RaiseTimerResolution(uint milliseconds = 1)
     {
         try { timeBeginPeriod(milliseconds); } catch { /* 失败也不致命 */ }
@@ -47,10 +43,7 @@ public static class CoreInfo
         try { timeEndPeriod(milliseconds); } catch { /* 忽略 */ }
     }
 
-    /// <summary>
-    /// 把当前线程登记成 MMCSS 的 "Pro Audio" 线程——ASIO 声卡驱动用的就是这套调度，
-    /// 能在 CPU 被游戏占满时明显减少线程唤醒抖动。
-    /// </summary>
+    /// <summary>登记为 MMCSS "Pro Audio" 线程（ASIO 驱动同款调度），减少 CPU 满载时的唤醒抖动。</summary>
     public static IntPtr EnterProAudio()
     {
         try { return AvSetMmThreadCharacteristics("Pro Audio", out uint _); }

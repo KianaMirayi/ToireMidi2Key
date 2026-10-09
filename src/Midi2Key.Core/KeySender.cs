@@ -3,9 +3,8 @@ using System.Runtime.InteropServices;
 namespace Midi2Key;
 
 /// <summary>
-/// 用 SendInput 把按键注入到系统输入流，效果等同于你真的按了那个键。
-/// mode = scancode：发扫描码（Unity/游戏/DirectInput 最认这个，推荐）
-/// mode = vk      ：发虚拟键码（某些老程序只认这个）
+/// 用 SendInput 注入按键，等同真实按键。
+/// scancode（默认，游戏/DirectInput 认）或 vk（个别老程序只认这个）。
 /// </summary>
 public sealed class KeySender
 {
