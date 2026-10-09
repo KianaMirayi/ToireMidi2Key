@@ -175,15 +175,63 @@
             <Setter Property="Foreground" Value="{DynamicResource GsGoldBright}" />
         </Style>
 
+        <!-- 复选框：方框改深底描金；选中=金底 + 深色勾。
+             Fluent 的方框和勾分别绑在模板部件上，所以控件属性和 /template/ 部件都要打 -->
         <Style Selector="CheckBox">
             <Setter Property="Foreground" Value="{DynamicResource GsCream}" />
+            <Setter Property="Background" Value="{DynamicResource GsPanelDeep}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource GsLine}" />
         </Style>
+        <Style Selector="CheckBox /template/ Border">
+            <Setter Property="Background" Value="{DynamicResource GsPanelDeep}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource GsLine}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="3" />
+        </Style>
+        <Style Selector="CheckBox:pointerover /template/ Border">
+            <Setter Property="BorderBrush" Value="{DynamicResource GsGold}" />
+        </Style>
+        <Style Selector="CheckBox:checked">
+            <Setter Property="Background" Value="{DynamicResource GsGold}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource GsGoldBright}" />
+        </Style>
+        <Style Selector="CheckBox:checked /template/ Border">
+            <Setter Property="Background" Value="{DynamicResource GsGold}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource GsGoldBright}" />
+        </Style>
+        <Style Selector="CheckBox:checked:pointerover /template/ Border">
+            <Setter Property="Background" Value="{DynamicResource GsGoldBright}" />
+        </Style>
+        <Style Selector="CheckBox:checked /template/ Path">
+            <Setter Property="Fill" Value="#2B2118" />
+        </Style>
+
+        <!-- 日志列表：选中/悬停改金色，替掉 Fluent 默认的蓝灰高亮。
+             注意：Fluent 把高亮画在模板内的 ContentPresenter 上，
+             所以必须打到 /template/ ContentPresenter，直接改 ListBoxItem.Background 是无效的 -->
         <Style Selector="ListBox">
             <Setter Property="Background" Value="#00000000" />
             <Setter Property="Foreground" Value="{DynamicResource GsTextDim}" />
         </Style>
         <Style Selector="ListBoxItem">
             <Setter Property="Padding" Value="4,1" />
+            <Setter Property="Foreground" Value="{DynamicResource GsTextDim}" />
+        </Style>
+        <Style Selector="ListBoxItem /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#00000000" />
+            <Setter Property="CornerRadius" Value="4" />
+        </Style>
+        <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource GsHover}" />
+            <Setter Property="Foreground" Value="{DynamicResource GsCream}" />
+        </Style>
+        <Style Selector="ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#3DD3BC8E" />
+            <Setter Property="Foreground" Value="{DynamicResource GsGoldBright}" />
+        </Style>
+        <Style Selector="ListBoxItem:selected:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#59D3BC8E" />
+            <Setter Property="Foreground" Value="{DynamicResource GsGoldBright}" />
         </Style>
     </Window.Styles>
 

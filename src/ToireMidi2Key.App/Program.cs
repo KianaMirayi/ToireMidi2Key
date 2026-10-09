@@ -12,13 +12,16 @@ sealed class Program
     [STAThread]
     public static void Main(string[] args)
     {
-        if (ShouldAutoElevate() && Elevation.TryRelaunchAsAdmin(args)) return;
+        if (ShouldAutoElevate(args) && Elevation.TryRelaunchAsAdmin(args)) return;
 
         BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
     }
 
-    private static bool ShouldAutoElevate()
+    private static bool ShouldAutoElevate(string[] args)
     {
+        // --no-elevate：本次启动跳过自动提权（自动化测试、或临时用普通权限跑时很方便）
+        if (args.Any(a => string.Equals(a, "--no-elevate", StringComparison.OrdinalIgnoreCase))) return false;
+
         try
         {
             string configPath = Path.Combine(AppContext.BaseDirectory, "config.json");
