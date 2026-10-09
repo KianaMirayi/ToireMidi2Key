@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ToireMidi2Key 安装包定义（WiX v7）
+
+  关键设计：Scope="perUser" —— 每用户安装，装到 %LocalAppData%\Programs\ToireMidi2Key
+    · 不需要管理员权限、不弹 UAC（双击 MSI 直接装）
+    · 关键是这个目录【可写】—— 程序的 config.json 恒在 exe 同目录（AppContext.BaseDirectory），
+      装在 Program Files 会因无写权限而存不下配置
+-->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+
+  <Package Name="ToireMidi2Key"
+           Manufacturer="KianaMirayi"
+           Version="0.1.0"
+           UpgradeCode="7E3A1C9B-5D42-4F8A-9C61-2B7E5A4D8F31"
+           Scope="perUser"
+           Compressed="yes"
+           InstallerVersion="500">
+
+    <SummaryInformation Description="ToireMidi2Key —— 把 MIDI 键盘变成电脑键盘" />
+
+    <!-- 覆盖安装 / 升级：同版本可重装，降级给出提示 -->
+    <MajorUpgrade AllowSameVersionUpgrades="yes"
+                  DowngradeErrorMessage="已安装更高版本的 ToireMidi2Key，请先卸载后再装这一版。" />
+    <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
+
+    <!-- 显式声明每用户安装：ALLUSERS=2 + MSIINSTALLPERUSER=1
+         → 双击安装不弹 UAC，装进用户目录（该目录可写，config.json 才能落在 exe 旁边） -->
+    <Property Id="ALLUSERS" Value="2" />
+    <Property Id="MSIINSTALLPERUSER" Value="1" />
+
+    <!-- 控制面板「应用和功能」里的显示信息 -->
+    <Icon Id="AppIcon" SourceFile="src\ToireMidi2Key.App\Assets\app.ico" />
+    <Property Id="ARPPRODUCTICON" Value="AppIcon" />
+    <Property Id="ARPHELPLINK" Value="https://github.com/KianaMirayi/ToireMidi2Key" />
+    <Property Id="ARPCOMMENTS" Value="弹哪个音，就等于按下哪个电脑按键（MIDI 键盘 → 电脑键盘）" />
+    <Property Id="ARPNOREPAIR" Value="1" />
+    <Property Id="ARPNOMODIFY" Value="1" />
+
+    <!-- 安装位置：%LocalAppData%\Programs\ToireMidi2Key（可写，config.json 就放这里） -->
+    <StandardDirectory Id="LocalAppDataFolder">
+      <Directory Id="ProgramsFolder" Name="Programs">
+        <Directory Id="INSTALLFOLDER" Name="ToireMidi2Key">
+          <Component Id="AppExe" Guid="*">
+            <File Id="AppExeFile" Source="build\app\ToireMidi2Key.exe" KeyPath="yes" />
+          </Component>
+          <Component Id="ReadmeFile" Guid="*">
+            <File Id="ReadmeMd" Source="README.md" KeyPath="yes" />
+          </Component>
+          <Component Id="LicenseFile" Guid="*">
+            <File Id="LicenseTxt" Source="LICENSE" Name="LICENSE.txt" KeyPath="yes" />
+          </Component>
+        </Directory>
+      </Directory>
+    </StandardDirectory>
+
+    <!-- 开始菜单；桌面用标准虚拟符号 DesktopFolder（WiX 5 里不能再声明该目录）-->
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Directory Id="AppMenuFolder" Name="ToireMidi2Key" />
+    </StandardDirectory>
+
+    <Feature Id="Main" Title="ToireMidi2Key" Level="1" AllowAbsent="no">
+      <ComponentRef Id="AppExe" />
+      <ComponentRef Id="ReadmeFile" />
+      <ComponentRef Id="LicenseFile" />
+      <ComponentRef Id="StartMenuShortcut" />
+      <ComponentRef Id="DesktopShortcut" />
+    </Feature>
+
+    <Component Id="StartMenuShortcut" Directory="AppMenuFolder" Guid="*">
+      <Shortcut Id="StartMenuShortcut" Name="ToireMidi2Key"
+                Description="把 MIDI 键盘变成电脑键盘"
+                Target="[INSTALLFOLDER]ToireMidi2Key.exe"
+                WorkingDirectory="INSTALLFOLDER" />
+      <RemoveFolder Id="RemoveAppMenuFolder" On="uninstall" />
+      <RegistryValue Root="HKCU" Key="Software\KianaMirayi\ToireMidi2Key"
+                     Name="StartMenuShortcut" Type="integer" Value="1" KeyPath="yes" />
+    </Component>
+
+    <Component Id="DesktopShortcut" Directory="DesktopFolder" Guid="*">
+      <Shortcut Id="DesktopShortcut" Name="ToireMidi2Key"
+                Description="把 MIDI 键盘变成电脑键盘"
+                Target="[INSTALLFOLDER]ToireMidi2Key.exe"
+                WorkingDirectory="INSTALLFOLDER" />
+      <RegistryValue Root="HKCU" Key="Software\KianaMirayi\ToireMidi2Key"
+                     Name="DesktopShortcut" Type="integer" Value="1" KeyPath="yes" />
+    </Component>
+
+  </Package>
+</Wix>
