@@ -77,7 +77,7 @@ public partial class MainViewModel : ViewModelBase, IDisposable
         IsAdmin = CoreInfo.IsElevated();
         AdminHint = IsAdmin
             ? "已获得管理员权限，注入通道就绪。"
-            : "非管理员：注入到以管理员运行的游戏（如原神）会无效。勾选右边开关可在下次启动时自动提权，或点按钮立即重启。";
+            : "非管理员：注入原神会无效。勾选右侧开关可下次自动提权，或点按钮立即重启。";
 
         _bridge.Log += OnBridgeLog;
         _bridge.StateChanged += OnBridgeStateChanged;
