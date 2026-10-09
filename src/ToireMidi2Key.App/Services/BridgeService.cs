@@ -59,8 +59,26 @@ public sealed class BridgeService : IBridgeService
 
     public void ApplyConfig(ToireMidi2KeyConfig config)
     {
-        Config = config;
-        Mapping = new Mapping(config);
+        // 就地更新已有实例：正在运行的引擎持有同一个 Config 引用，
+        // 所以改完数值参数（移调 / 最小重触发 / 和弦错峰…）立刻生效，不必停止再启动。
+        // （Mapping 是构造时注入引擎的，改映射表仍需停止后重新启动。）
+        Config.Device = config.Device;
+        Config.DeviceName = config.DeviceName;
+        Config.Mode = config.Mode;
+        Config.NoteNaming = config.NoteNaming;
+        Config.Transpose = config.Transpose;
+        Config.MinRetriggerMs = config.MinRetriggerMs;
+        Config.MinPulseMs = config.MinPulseMs;
+        Config.ChordSpreadMs = config.ChordSpreadMs;
+        Config.VelocityThreshold = config.VelocityThreshold;
+        Config.Unmapped = config.Unmapped;
+        Config.ToggleCc = config.ToggleCc;
+        Config.SustainCc = config.SustainCc;
+        Config.SustainEnabled = config.SustainEnabled;
+        Config.AutoElevate = config.AutoElevate;
+        Config.Map = config.Map;
+
+        Mapping = new Mapping(Config);
         foreach (string warning in Mapping.Warnings) Emit(warning);
         StateChanged?.Invoke();
     }

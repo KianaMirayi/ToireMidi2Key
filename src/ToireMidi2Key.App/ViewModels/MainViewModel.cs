@@ -145,6 +145,19 @@ public partial class MainViewModel : ViewModelBase, IDisposable
             : "已关闭：下次启动不再自动提权，仍可随时点「以管理员重启」。已写入 config.json。");
     }
 
+    // 数值型参数：在输入框里改完（Enter / 点到别处 / 点上下箭头）会走到这里，
+    // 立刻同步给引擎（就地更新，运行中也生效），并提示还需点「保存配置」才写盘。
+    partial void OnTransposeChanged(decimal? value) => OnParameterChanged("移调", $"{value ?? 0} 半音");
+    partial void OnMinRetriggerMsChanged(decimal? value) => OnParameterChanged("最小重触发", $"{value ?? 30} ms");
+    partial void OnChordSpreadMsChanged(decimal? value) => OnParameterChanged("和弦错峰", $"{value ?? 0} ms");
+
+    private void OnParameterChanged(string name, string display)
+    {
+        if (_loadingConfig) return;
+        ApplyUiToConfig();
+        AppendLog($"{name} = {display}（已即时生效；要长期保留请点「保存配置」写入磁盘）");
+    }
+
     private static IEnumerable<KeyValuePair<string, string>> OrderMap(Dictionary<string, string> map)
     {
         return map.OrderBy(e =>
