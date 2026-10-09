@@ -1,0 +1,171 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Midi2Key.App.ViewModels"
+        xmlns:core="using:Midi2Key"
+        xmlns:sys="using:System"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1060" d:DesignHeight="700"
+        x:Class="Midi2Key.App.Views.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="MIDI 键盘 → 电脑键盘"
+        Width="1060" Height="700" MinWidth="900" MinHeight="560">
+
+    <Design.DataContext>
+        <vm:MainViewModel />
+    </Design.DataContext>
+
+    <Window.Styles>
+        <Style Selector="Border.card">
+            <Setter Property="Background" Value="#14808080" />
+            <Setter Property="BorderBrush" Value="#33808080" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="12" />
+        </Style>
+        <Style Selector="TextBlock.title">
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+        </Style>
+        <Style Selector="TextBlock.hint">
+            <Setter Property="Opacity" Value="0.6" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="TextBlock.label">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Margin" Value="0,0,4,0" />
+        </Style>
+    </Window.Styles>
+
+    <Grid RowDefinitions="Auto,*,Auto" Margin="14" RowSpacing="10">
+
+        <!-- ================= 顶部：设备 + 运行控制 ================= -->
+        <Border Grid.Row="0" Classes="card">
+            <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto,Auto,Auto" ColumnSpacing="8">
+                <TextBlock Grid.Column="0" Classes="label" Text="MIDI 设备" />
+                <ComboBox Grid.Column="1" Width="300" ItemsSource="{Binding Devices}"
+                          SelectedItem="{Binding SelectedDevice}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="core:MidiDeviceInfo">
+                            <TextBlock Text="{Binding Name}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+                <Button Grid.Column="2" Content="刷新" Command="{Binding RefreshDevicesCommand}" />
+                <TextBlock Grid.Column="3" Classes="hint" Text="{Binding DeviceSummary}"
+                           TextTrimming="CharacterEllipsis" />
+                <Button Grid.Column="4" MinWidth="96" Content="{Binding StartStopText}"
+                        Command="{Binding StartStopCommand}" />
+                <Button Grid.Column="5" MinWidth="96" Content="{Binding PauseButtonText}"
+                        Command="{Binding TogglePauseCommand}" />
+                <Button Grid.Column="6" Content="紧急松开" Command="{Binding PanicCommand}" />
+            </Grid>
+        </Border>
+
+        <!-- ================= 中间：映射表 + 状态/日志 ================= -->
+        <Grid Grid.Row="1" ColumnDefinitions="*,380" ColumnSpacing="10">
+
+            <Border Grid.Column="0" Classes="card">
+                <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="8">
+                    <TextBlock Grid.Row="0" Classes="title" Text="映射表　MIDI 音 → 电脑按键" />
+                    <Grid Grid.Row="1" ColumnDefinitions="110,210,110,*" ColumnSpacing="8">
+                        <TextBlock Grid.Column="0" Classes="hint" Text="音号 / 音名" />
+                        <TextBlock Grid.Column="1" Classes="hint" Text="音名对照（避免 C3/C4 歧义）" />
+                        <TextBlock Grid.Column="2" Classes="hint" Text="电脑按键" />
+                        <TextBlock Grid.Column="3" Classes="hint" Text="操作" />
+                    </Grid>
+
+                    <ScrollViewer Grid.Row="2" HorizontalScrollBarVisibility="Disabled">
+                        <ItemsControl ItemsSource="{Binding Rows}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:MappingRowViewModel">
+                                    <Grid ColumnDefinitions="110,210,110,*" ColumnSpacing="8" Margin="0,0,0,3">
+                                        <TextBox Grid.Column="0" Text="{Binding NoteText}" PlaceholderText="48 或 C3" />
+                                        <TextBlock Grid.Column="1" Classes="hint" Text="{Binding NoteDescription}" />
+                                        <TextBox Grid.Column="2" Text="{Binding KeyText}" PlaceholderText="Z" />
+                                        <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="6">
+                                            <TextBlock Text="●" Foreground="#E8A33D" IsVisible="{Binding IsHighlighted}"
+                                                       VerticalAlignment="Center" ToolTip.Tip="最近学到的音" />
+                                            <Button Content="删除" Command="{Binding DeleteCommand}" />
+                                        </StackPanel>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <WrapPanel Grid.Row="3" Orientation="Horizontal" ItemSpacing="8" LineSpacing="8">
+                        <Button Content="＋ 添加一行" Command="{Binding AddRowCommand}" />
+                        <Button Content="套用原神乐器预设" Command="{Binding ApplyGenshinPresetCommand}" />
+                        <TextBlock Classes="label" Text="预设最低音" />
+                        <NumericUpDown Width="110" Minimum="12" Maximum="96" Increment="1"
+                                       Value="{Binding PresetBaseNote}" />
+                        <Button Content="保存配置" Command="{Binding SaveConfigCommand}" />
+                        <Button Content="重新载入" Command="{Binding ReloadConfigCommand}" />
+                    </WrapPanel>
+                </Grid>
+            </Border>
+
+            <Border Grid.Column="1" Classes="card">
+                <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" RowSpacing="8">
+                    <TextBlock Grid.Row="0" Classes="title" Text="状态 / 监听" />
+
+                    <CheckBox Grid.Row="1" IsChecked="{Binding LearnMode}"
+                              Content="学习模式：弹一下琴键，自动加一行映射" />
+
+                    <StackPanel Grid.Row="2" Spacing="2">
+                        <TextBlock Classes="hint" Text="{Binding StatusText}" />
+                        <TextBlock Classes="hint" Text="{Binding LastNoteText}" />
+                        <TextBlock Classes="hint" Text="{Binding LastControlText}" />
+                        <TextBlock Classes="hint" Text="{Binding LatencyText}" />
+                    </StackPanel>
+
+                    <ListBox Grid.Row="3" ItemsSource="{Binding Logs}" FontSize="11"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="sys:String">
+                                <TextBlock Text="{Binding}" TextWrapping="Wrap" />
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <Button Grid.Row="4" HorizontalAlignment="Right" Content="清空日志"
+                            Command="{Binding ClearLogCommand}" />
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ================= 底部：参数 + 权限 ================= -->
+        <Border Grid.Row="2" Classes="card">
+            <WrapPanel Orientation="Horizontal" ItemSpacing="10" LineSpacing="8">
+                <TextBlock Classes="label" Text="注入方式" />
+                <ComboBox Width="130" ItemsSource="{Binding ModeOptions}" SelectedItem="{Binding Mode}" />
+
+                <TextBlock Classes="label" Text="未映射的音" />
+                <ComboBox Width="120" ItemsSource="{Binding UnmappedOptions}" SelectedItem="{Binding Unmapped}" />
+
+                <TextBlock Classes="label" Text="移调(半音)" />
+                <NumericUpDown Width="110" Minimum="-24" Maximum="24" Increment="1" Value="{Binding Transpose}" />
+
+                <TextBlock Classes="label" Text="最小重触发(ms)" />
+                <NumericUpDown Width="110" Minimum="0" Maximum="300" Increment="5"
+                               Value="{Binding MinRetriggerMs}" />
+
+                <TextBlock Classes="label" Text="和弦错峰(ms)" />
+                <NumericUpDown Width="110" Minimum="0" Maximum="100" Increment="1"
+                               Value="{Binding ChordSpreadMs}" />
+
+                <CheckBox IsChecked="{Binding SustainEnabled}" Content="延音踏板(CC64)" />
+
+                <TextBlock Classes="hint" Text="{Binding AdminHint}" />
+                <Button Content="以管理员重启" Command="{Binding RestartAsAdminCommand}" />
+                <Button Content="打开配置目录" Command="{Binding OpenConfigFolderCommand}" />
+
+                <TextBlock Classes="hint" Text="{Binding ConfigPathText}" TextTrimming="CharacterEllipsis" />
+                <TextBlock Classes="hint" Text="{Binding NotesPlayed, StringFormat='已演奏 {0} 个音'}" />
+            </WrapPanel>
+        </Border>
+    </Grid>
+</Window>
