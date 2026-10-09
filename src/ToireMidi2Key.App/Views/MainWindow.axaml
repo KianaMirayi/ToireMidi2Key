@@ -175,34 +175,31 @@
             <Setter Property="Foreground" Value="{DynamicResource GsGoldBright}" />
         </Style>
 
-        <!-- 复选框：金只上在方框上（整控件上色会把文字也涂成金底，导致读不清）；
-             文字在选中时用和日志选中一致的亮金色 -->
-        <Style Selector="CheckBox">
-            <Setter Property="Foreground" Value="{DynamicResource GsCream}" />
-        </Style>
-        <Style Selector="CheckBox TextBlock">
-            <Setter Property="Foreground" Value="{DynamicResource GsCream}" />
-        </Style>
-        <Style Selector="CheckBox:checked TextBlock">
-            <Setter Property="Foreground" Value="{DynamicResource GsGoldBright}" />
-        </Style>
-        <Style Selector="CheckBox /template/ Border">
+        <!-- 复选框：只改「方框 + 勾」，文字一律不碰。
+             Fluent 的 CheckBox 模板结构：
+               Border#PART_Border        ← 横跨整行（含文字区）的底，绝对不能动
+               Border#NormalRectangle    ← 真正的 20x20 方框
+               Path#CheckGlyph           ← 勾
+               ContentPresenter#PART_ContentPresenter ← 文字
+             之前用不限名字的 "CheckBox /template/ Border"，连 PART_Border 一起刷成了金色，
+             于是文字背后多出一条金底、读不清 -->
+        <Style Selector="CheckBox /template/ Border#NormalRectangle">
             <Setter Property="Background" Value="{DynamicResource GsPanelDeep}" />
             <Setter Property="BorderBrush" Value="{DynamicResource GsLine}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="3" />
         </Style>
-        <Style Selector="CheckBox:pointerover /template/ Border">
+        <Style Selector="CheckBox:pointerover /template/ Border#NormalRectangle">
             <Setter Property="BorderBrush" Value="{DynamicResource GsGold}" />
         </Style>
-        <Style Selector="CheckBox:checked /template/ Border">
+        <Style Selector="CheckBox:checked /template/ Border#NormalRectangle">
             <Setter Property="Background" Value="{DynamicResource GsGold}" />
             <Setter Property="BorderBrush" Value="{DynamicResource GsGoldBright}" />
         </Style>
-        <Style Selector="CheckBox:checked:pointerover /template/ Border">
+        <Style Selector="CheckBox:checked:pointerover /template/ Border#NormalRectangle">
             <Setter Property="Background" Value="{DynamicResource GsGoldBright}" />
         </Style>
-        <Style Selector="CheckBox:checked /template/ Path">
+        <Style Selector="CheckBox:checked /template/ Path#CheckGlyph">
             <Setter Property="Fill" Value="#2B2118" />
         </Style>
 
