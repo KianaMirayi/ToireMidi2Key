@@ -255,9 +255,9 @@ public partial class MainViewModel : ViewModelBase, IDisposable
         }
         try
         {
-            string? exe = Environment.ProcessPath;
-            if (string.IsNullOrEmpty(exe)) return;
-            Process.Start(new ProcessStartInfo(exe) { UseShellExecute = true, Verb = "runas" });
+            ProcessStartInfo startInfo = BuildElevatedStartInfo();
+            AppendLog($"提权重启：{startInfo.FileName} {startInfo.Arguments}".Trim());
+            Process.Start(startInfo);
             if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime)
                 lifetime.Shutdown();
         }
@@ -266,6 +266,51 @@ public partial class MainViewModel : ViewModelBase, IDisposable
             AppendLog($"提权被取消或失败：{ex.Message}");
         }
     }
+
+    /// <summary>
+    /// 组装"以管理员重新启动"的命令行。
+    /// 关键：在调试器下启动时 Environment.ProcessPath 是 dotnet.exe（宿主进程），
+    /// 直接拿它 runas 相当于启动一个不带参数的 dotnet.exe——它会打印帮助然后立刻退出，
+    /// 表现就是"点了按钮、进程关了、但没重新起来"。
+    /// 所以优先用同目录的 apphost（ToireMidi2Key.exe），没有再退回"宿主 + dll + 参数"。
+    /// </summary>
+    private static ProcessStartInfo BuildElevatedStartInfo()
+    {
+        string baseDir = AppContext.BaseDirectory;
+        var startInfo = new ProcessStartInfo
+        {
+            UseShellExecute = true,
+            Verb = "runas",
+            WorkingDirectory = baseDir
+        };
+
+        string appHost = Path.Combine(baseDir, "ToireMidi2Key.exe");
+        if (File.Exists(appHost))
+        {
+            startInfo.FileName = appHost;
+            return startInfo;
+        }
+
+        string host = Environment.ProcessPath ?? throw new InvalidOperationException("拿不到当前进程路径");
+        string entryDll = System.Reflection.Assembly.GetEntryAssembly()?.Location ?? "";
+
+        var arguments = new List<string>();
+        bool hostIsDotnet = Path.GetFileNameWithoutExtension(host).Equals("dotnet", StringComparison.OrdinalIgnoreCase);
+        if (hostIsDotnet && entryDll.Length > 0) arguments.Add(entryDll);
+
+        foreach (string arg in Environment.GetCommandLineArgs().Skip(1))
+        {
+            if (arg.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)) continue;   // 避免重复加 dll
+            arguments.Add(arg);
+        }
+
+        startInfo.FileName = host;
+        startInfo.Arguments = string.Join(' ', arguments.Select(QuoteArgument));
+        return startInfo;
+    }
+
+    private static string QuoteArgument(string value) =>
+        value.Contains(' ') ? $"\"{value}\"" : value;
 
 
     private void OnBridgeLog(string message) => AppendLog(message);   // 只入队，不碰界面
