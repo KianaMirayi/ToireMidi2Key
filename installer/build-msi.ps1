@@ -25,11 +25,16 @@ dotnet publish src\ToireMidi2Key.App -c Release -r win-x64 --self-contained true
     -o build\app --nologo -v q
 if ($LASTEXITCODE -ne 0) { throw 'dotnet publish 失败' }
 
-Write-Host '[2/3] 清理调试符号与运行时生成的 config.json…' -ForegroundColor Cyan
+Write-Host '[2/4] 编译卸载程序（Native AOT，不依赖 .NET 运行时）…' -ForegroundColor Cyan
+dotnet publish src\ToireMidi2Key.Uninstaller -c Release -r win-x64 -o build\uninstaller --nologo -v q
+if ($LASTEXITCODE -ne 0) { throw 'dotnet publish（卸载程序）失败' }
+Get-ChildItem build\uninstaller -Filter *.pdb -ErrorAction SilentlyContinue | Remove-Item -Force
+
+Write-Host '[3/4] 清理调试符号与运行时生成的 config.json…' -ForegroundColor Cyan
 Get-ChildItem build\app -Filter *.pdb -ErrorAction SilentlyContinue | Remove-Item -Force
 Remove-Item build\app\config.json -Force -ErrorAction SilentlyContinue
 
-Write-Host '[3/3] 生成 MSI…' -ForegroundColor Cyan
+Write-Host '[4/4] 生成 MSI…' -ForegroundColor Cyan
 if (-not (Get-Command wix -ErrorAction SilentlyContinue)) {
     throw '未找到 wix，请先执行：dotnet tool install --global wix --version 5.0.2'
 }

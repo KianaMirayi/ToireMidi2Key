@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+
+    <AssemblyName>uninstall</AssemblyName>
+    <RootNamespace>ToireMidi2Key.Uninstaller</RootNamespace>
+    <Version>0.1.0</Version>
+    <Product>ToireMidi2Key</Product>
+    <Description>ToireMidi2Key 卸载程序</Description>
+    <ApplicationIcon>..\ToireMidi2Key.App\Assets\app.ico</ApplicationIcon>
+
+    <!-- Native AOT：编译成原生 exe，不依赖 .NET 运行时，体积只有 1~2MB。
+         用户机器的运行时不保证存在，卸载程序更不能依赖它。 -->
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <PublishAot>true</PublishAot>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <StackTraceSupport>false</StackTraceSupport>
+  </PropertyGroup>
+
+</Project>

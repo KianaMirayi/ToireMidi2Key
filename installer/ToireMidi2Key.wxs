@@ -9,7 +9,9 @@
        装在 Program Files 会因为无写权限而存不下配置
   2) 安装界面用 WixUI_InstallDir —— 带「许可协议」页和【选择安装位置】页，
      用户可以改成任意路径（含中文路径，如 D:\临时文件\ToireMidi2Key）
-  3) 程序自身也支持中文路径：配置读写、提权重启全部走 .NET 的 Unicode 路径 API，无 ANSI 转换
+  3) 安装目录里带一个「卸载.exe」（Native AOT 编译，不依赖 .NET 运行时），
+     双击即可卸载；开始菜单也有对应快捷方式
+  4) Codepage=936 —— 界面与字符串含中文，必须指定中文代码页（WiX 默认 1252 会打包失败）
 -->
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
      xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
@@ -54,6 +56,9 @@
           <Component Id="AppExe" Guid="*">
             <File Id="AppExeFile" Source="build\app\ToireMidi2Key.exe" KeyPath="yes" />
           </Component>
+          <Component Id="UninstallerExe" Guid="*">
+            <File Id="UninstallerFile" Source="build\uninstaller\uninstall.exe" Name="卸载.exe" KeyPath="yes" />
+          </Component>
           <Component Id="ReadmeFile" Guid="*">
             <File Id="ReadmeMd" Source="README.md" KeyPath="yes" />
           </Component>
@@ -71,9 +76,11 @@
 
     <Feature Id="Main" Title="ToireMidi2Key" Level="1" AllowAbsent="no">
       <ComponentRef Id="AppExe" />
+      <ComponentRef Id="UninstallerExe" />
       <ComponentRef Id="ReadmeFile" />
       <ComponentRef Id="LicenseFile" />
       <ComponentRef Id="StartMenuShortcut" />
+      <ComponentRef Id="UninstallShortcut" />
       <ComponentRef Id="DesktopShortcut" />
     </Feature>
 
@@ -85,6 +92,15 @@
       <RemoveFolder Id="RemoveAppMenuFolder" On="uninstall" />
       <RegistryValue Root="HKCU" Key="Software\KianaMirayi\ToireMidi2Key"
                      Name="StartMenuShortcut" Type="integer" Value="1" KeyPath="yes" />
+    </Component>
+
+    <Component Id="UninstallShortcut" Directory="AppMenuFolder" Guid="*">
+      <Shortcut Id="UninstallShortcut" Name="卸载 ToireMidi2Key"
+                Description="卸载 ToireMidi2Key"
+                Target="[INSTALLFOLDER]卸载.exe"
+                WorkingDirectory="INSTALLFOLDER" />
+      <RegistryValue Root="HKCU" Key="Software\KianaMirayi\ToireMidi2Key"
+                     Name="UninstallShortcut" Type="integer" Value="1" KeyPath="yes" />
     </Component>
 
     <Component Id="DesktopShortcut" Directory="DesktopFolder" Guid="*">
