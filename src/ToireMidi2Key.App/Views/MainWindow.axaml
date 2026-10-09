@@ -238,8 +238,12 @@
                     PointerPressed="OnTitleBarPointerPressed"
                     DoubleTapped="OnTitleBarDoubleTapped">
                 <Grid ColumnDefinitions="Auto,*,Auto" Margin="12,0" Height="42">
-                    <TextBlock Grid.Column="0" Text="ToireMidi2Key" FontSize="13" FontWeight="SemiBold"
-                               Foreground="{DynamicResource GsGold}" VerticalAlignment="Center" />
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
+                        <Image Source="/Assets/app-icon.png" Width="18" Height="18" VerticalAlignment="Center"
+                               RenderOptions.BitmapInterpolationMode="HighQuality" />
+                        <TextBlock Text="ToireMidi2Key" FontSize="13" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource GsGold}" VerticalAlignment="Center" />
+                    </StackPanel>
                     <TextBlock Grid.Column="1" Text="MIDI 键盘 → 电脑键盘" FontSize="11" Margin="10,0,0,0"
                                Foreground="{DynamicResource GsTextDim}" VerticalAlignment="Center" />
                     <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">

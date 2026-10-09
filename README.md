@@ -192,6 +192,7 @@ src/
 - **Avalonia 12 窗口装饰**：`ExtendClientAreaChromeHints` 已删除，改用 `Window.WindowDecorations`（None/BorderOnly/Full）+ `WindowDecorationProperties.ElementRole`；描边必须放在**独立不裁剪**的层，否则 Border 的内容裁剪会切掉圆角圆弧。
 - **`NumericUpDown`** 默认只在点上下箭头时更新 `Value`；手输后按 Enter / 点到别处都不提交，所以在窗口层统一兜底（`KeyDown`/`PointerPressed` 是冒泡事件，`AddHandler` 必须用 `Bubble` + `handledEventsToo`）。
 - **CheckBox 模板部件名**：只改 `Border#NormalRectangle`（方框）和 `Path#CheckGlyph`（勾）；用不限名字的 `Border` 选择器会连 `PART_Border`（横跨整行、含文字区）一起上色。
+- **应用图标**：`Assets/app.ico`（窗口 + exe）与 `Assets/app-icon.png`（自绘标题栏里显示 18px）都从 `docs/icon.png` 生成；16/24/32 用「抠图 + 平底」的小尺寸版（否则插画在 16px 会糊成一团），48 及以上保留原插画。
 
 ## 版本
 
