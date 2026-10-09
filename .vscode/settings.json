@@ -1,0 +1,5 @@
+{
+  // 仓库里同时有 .slnx（Rider 默认）和 .sln（经典格式）。
+  // 指定经典 .sln 是为了让 VSCode 的 C# Dev Kit 稳定加载；.slnx 支持在部分版本里还不完整。
+  "dotnet.defaultSolution": "ToireMidi2Key.sln"
+}

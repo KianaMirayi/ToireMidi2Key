@@ -1,0 +1,71 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "GUI: ToireMidi2Key",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/src/ToireMidi2Key.App/bin/Debug/net10.0/ToireMidi2Key.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/src/ToireMidi2Key.App/bin/Debug/net10.0",
+      "console": "internalConsole",
+      "stopAtEntry": false
+    },
+    {
+      "name": "CLI: --selftest 离线自检",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/src/ToireMidi2Key.Cli/bin/Debug/net9.0/ToireMidi2Key.Cli.dll",
+      "args": ["--selftest"],
+      "cwd": "${workspaceFolder}/src/ToireMidi2Key.Cli/bin/Debug/net9.0",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "CLI: --list 设备列表",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/src/ToireMidi2Key.Cli/bin/Debug/net9.0/ToireMidi2Key.Cli.dll",
+      "args": ["--list"],
+      "cwd": "${workspaceFolder}/src/ToireMidi2Key.Cli/bin/Debug/net9.0",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "CLI: --learn 学习模式（看音号）",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/src/ToireMidi2Key.Cli/bin/Debug/net9.0/ToireMidi2Key.Cli.dll",
+      "args": ["--learn"],
+      "cwd": "${workspaceFolder}/src/ToireMidi2Key.Cli/bin/Debug/net9.0",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "CLI: --latency 延迟实测",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/src/ToireMidi2Key.Cli/bin/Debug/net9.0/ToireMidi2Key.Cli.dll",
+      "args": ["--latency"],
+      "cwd": "${workspaceFolder}/src/ToireMidi2Key.Cli/bin/Debug/net9.0",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "CLI: --run 正式运行",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/src/ToireMidi2Key.Cli/bin/Debug/net9.0/ToireMidi2Key.Cli.dll",
+      "args": ["--run", "-v"],
+      "cwd": "${workspaceFolder}/src/ToireMidi2Key.Cli/bin/Debug/net9.0",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    }
+  ]
+}
