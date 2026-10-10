@@ -10,43 +10,22 @@
 
 | 文件 | 说明 |
 |---|---|
-| **`ToireMidi2Key-0.1.0-Setup.msi`** | **推荐**。双击即装，**自带 .NET 运行时**，不需要预装任何东西；装到用户目录，**不弹 UAC** |
+| **`ToireMidi2Key-0.1.0-Setup.exe`** | **推荐**。双击即装（中文向导），**自带 .NET 运行时**，不需要预装任何东西，**不需要管理员权限** |
 | `ToireMidi2Key-0.1.0-portable.zip` | 便携版（GUI + CLI 诊断工具），需要机器上已有 **.NET 9 / .NET 10 桌面运行时** |
 
-### 安装包里有什么
+### 安装（3 步）
 
-- **中文安装向导**：欢迎页 → 许可协议（含 3 条安装提示）→ **选择安装位置** → 确认 → 安装
-- **自动父文件夹包裹（重要）**：向导里选的是「父目录」，程序会装进该目录下**同名的 `ToireMidi2Key` 子文件夹**
-  - 选 `E:\` → 实际装到 `E:\ToireMidi2Key\`
-  - 选 `D:\临时文件` → 实际装到 `D:\临时文件\ToireMidi2Key\`
-  - 因此**绝不会**把 `ToireMidi2Key.exe`、`卸载.exe`、`README.md`、`LICENSE.txt` 散落到盘根或系统目录里
-  - 默认父目录：`%LocalAppData%\Programs` → 实际装到 `%LocalAppData%\Programs\ToireMidi2Key`
-- **推荐以管理员身份安装**（尤其装到 `D:\` 等非系统盘时）
-  - 默认装到用户目录**不需要**管理员；装到其它盘时若报「无法设置文件的安全权限（错误 5）」，请关闭后**右键安装包 → 以管理员身份运行**
-  - 许可协议页里也写了这条提示
-- **卸载**：用安装目录里的 `卸载.exe`（开始菜单也有「卸载 ToireMidi2Key」入口）
-  - **建议右键 →「以管理员身份运行」**：程序启动时会打印这条提示；若卸载失败或提示权限不足，改用管理员身份重试即可
-  - 也可以在「设置 → 应用 → 已安装的应用」里卸载（若提示权限不足，同样是权限原因）
-  - 卸载不会删除你的 `config.json`（映射表配置会保留在安装目录里）
-- 命令行高级用法（显式指定时不再追加子目录）：
-  `msiexec /i ToireMidi2Key-0.1.0-Setup.msi INSTALLFOLDER="D:\临时文件\ToireMidi2Key"`
-- **快捷方式**：开始菜单 + 桌面
-- **安装目录里带 `卸载.exe`**（1.6 MB，双击即可卸载；开始菜单也有「卸载 ToireMidi2Key」入口）
-- **程序配置 `config.json` 就在安装目录里、和 exe 同目录**（不会写到 AppData 或别的盘）
-- **卸载不会删除你的 `config.json`**：程序文件、快捷方式、注册项都会清掉，配置文件留在安装目录里；想彻底清掉就手动删掉文件夹
-- **重新安装 / 覆盖升级同样保留 `config.json`**（映射表不会丢）
-- 自带 .NET 运行时，**不需要预装任何东西**
+1. 双击 `ToireMidi2Key-0.1.0-Setup.exe`：中文向导（欢迎 → 许可协议 → **选择安装位置** → 安装）
+2. **安装位置选的是「父目录」**，程序会自动装进该目录下的 `ToireMidi2Key` 子文件夹：
 
-### 常见问题
+   | 你在向导里选的 | 实际装到 |
+   |---|---|
+   | `E:\` | `E:\ToireMidi2Key\` |
+   | `D:\临时文件` | `D:\临时文件\ToireMidi2Key\` |
+   | （默认）`%LocalAppData%\Programs` | `%LocalAppData%\Programs\ToireMidi2Key\` |
 
-**装到 D 盘等非系统盘时报「无法设置文件 "D:\Config.Msi\....rbf" 的文件安全。错误 5」？**
-
-这是 **Windows Installer 在该盘的回滚目录权限异常**（多半是以前安装/解包留下的 `D:\Config.Msi` 被锁给了 SYSTEM/管理员），和本程序无关。两种解法：
-
-1. 以**管理员**身份删除该盘根目录下的 `Config.Msi` 文件夹（它是安装回滚用的临时目录，没有正在进行的安装时可以安全删除），然后重新运行安装程序；
-2. 或者直接用**默认安装位置**（用户目录）——不需要管理员，也不会碰到这个问题。
-
-**卸载后安装目录里还剩一个 `config.json`？** 这是刻意的：配置文件属于你，卸载不删。想彻底清掉就手动删掉整个安装目录。
+   所以**绝不会**把 `ToireMidi2Key.exe`、`README.md`、`LICENSE.txt` 散落到盘根或系统目录。
+3. 装完勾选「运行 ToireMidi2Key」即可启动。
 
 ### 装完怎么用（以原神为例）
 
@@ -56,6 +35,23 @@
 3. 进游戏打开乐器界面，直接弹
 4. **如果游戏是以管理员身份运行的，本程序也必须提权**（Windows UIPI 限制）：
    点顶部「以管理员重启」，或勾选「启动时自动以管理员身份运行」
+
+### 卸载
+
+- 开始菜单 →「卸载 ToireMidi2Key」；或安装目录里的「卸载 ToireMidi2Key」快捷方式（即 `unins000.exe`）
+- 也可以在「设置 → 应用 → 已安装的应用」里卸载
+- **卸载不会删除你的 `config.json`**（映射表配置保留在安装目录里）；想彻底清掉就手动删掉整个文件夹
+- 若卸载时提示权限不足，右键卸载程序 →「以管理员身份运行」
+
+### 命令行用法（脚本 / 静默安装）
+
+```powershell
+# 静默装到指定父目录（会自动补上 ToireMidi2Key 子目录）
+ToireMidi2Key-0.1.0-Setup.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART /DIR="D:\临时文件"
+
+# 静默卸载
+"%LocalAppData%\Programs\ToireMidi2Key\unins000.exe" /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
+```
 
 ### 常用诊断（在便携版的 CLI 里）
 
@@ -71,5 +67,6 @@ ToireMidi2Key.Cli.exe --latency     # 测本程序内部延迟
 - **只做按键模拟**：不读游戏内存、不注入 DLL、不 hook 游戏进程。但任何第三方工具都可能被游戏判定违规（原神反作弊是内核级 mhyprot），**风险不为零，请自行判断**
 - 实测内部延迟：收到音符 → 按键注入完成，**平均 0.60ms**（p95 1.32ms）；体感延迟基本来自游戏或音频设备
 - 协议：**MIT**（见 [LICENSE](https://github.com/KianaMirayi/ToireMidi2Key/blob/master/LICENSE)）
+- 安装包用 **Inno Setup** 构建，脚本在仓库里：`installer\ToireMidi2Key.iss`
 
 **完整使用说明与配置表见 [README](https://github.com/KianaMirayi/ToireMidi2Key#readme)**
