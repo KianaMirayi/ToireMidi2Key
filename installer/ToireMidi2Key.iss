@@ -29,6 +29,7 @@ AppUpdatesURL={#AppURL}
 DefaultDirName={autopf}\{#AppName}
 AppendDefaultDirName=yes
 DisableProgramGroupPage=yes
+DefaultGroupName={#AppName}
 LicenseFile=license.txt
 PrivilegesRequired=lowest
 OutputDir=..\dist
