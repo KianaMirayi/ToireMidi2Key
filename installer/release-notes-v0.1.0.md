@@ -70,3 +70,15 @@ ToireMidi2Key.Cli.exe --latency     # 测本程序内部延迟
 - 安装包用 **Inno Setup** 构建，脚本在仓库里：`installer\ToireMidi2Key.iss`
 
 **完整使用说明与配置表见 [README](https://github.com/KianaMirayi/ToireMidi2Key#readme)**
+
+---
+
+## 赞赏
+
+如果这个项目帮到了你，或者你只是单纯喜欢，欢迎请作者喝一杯茉莉奶绿 / 曼巴冰红茶 ☕
+
+**完全自愿** —— 不赞赏也完全没关系，项目一直是 MIT，随便用、随便改。
+
+![赞赏码](https://raw.githubusercontent.com/KianaMirayi/ToireMidi2Key/master/docs/donation-qrcode-480.png)
+
+> 「若有帮助或喜欢，能我一杯茉莉奶绿或者曼巴冰红茶吗，非常感谢！」
